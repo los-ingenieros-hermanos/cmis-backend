@@ -1,3 +1,4 @@
+# DROP USER IF EXISTS 'cmis'@'localhost';
 CREATE USER 'cmis'@'localhost' IDENTIFIED BY 'cmis';
 
 GRANT ALL PRIVILEGES ON * . * TO 'cmis'@'localhost';
