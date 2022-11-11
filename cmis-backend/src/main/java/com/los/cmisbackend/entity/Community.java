@@ -34,8 +34,7 @@ public class Community {
 
 
 
-	public Community(int id, String name, String email, String info) {
-		this.id = id;
+	public Community(String name, String email, String info) {
 		this.name = name;
 		this.email = email;
 		this.info = info;
