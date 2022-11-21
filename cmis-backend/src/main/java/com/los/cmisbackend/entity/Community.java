@@ -1,11 +1,15 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.los.cmisbackend.util.BCryptPasswordDeserializer;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name="community")
@@ -25,6 +29,11 @@ public class Community {
 	@Column(name="info")
 	private String info;
 
+	@Size(min = 60, max = 60)
+	@JsonDeserialize(using = BCryptPasswordDeserializer.class )
+	@Column(name="password", nullable = false, length = 60)
+	private String password;
+
 	// photo
 	// posts
 	// members
@@ -33,14 +42,12 @@ public class Community {
 	}
 
 
-
-	public Community(String name, String email, String info) {
+	public Community(String name, String email, String info, String password) {
 		this.name = name;
 		this.email = email;
 		this.info = info;
+		this.password = password;
 	}
-
-
 
 	public int getId() {
 		return id;
@@ -88,7 +95,13 @@ public class Community {
 		this.info = info;
 	}
 
+	public String getPassword() {
+		return password;
+	}
 
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	@Override
 	public String toString() {
