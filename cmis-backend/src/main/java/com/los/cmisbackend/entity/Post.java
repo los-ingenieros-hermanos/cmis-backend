@@ -19,9 +19,7 @@ public class Post {
     @Column(name="text")
     private String text;
 
-    @ManyToMany(fetch=FetchType.LAZY,
-            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
-                    CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(cascade= CascadeType.ALL)
     @JoinTable(
             name="bookmarked_post",
             joinColumns=@JoinColumn(name="post_id"),
@@ -40,7 +38,6 @@ public class Post {
     public Post(String title, String text) {
         this.title = title;
         this.text = text;
-        this.users = new ArrayList<>();
     }
 
     public int getId() {

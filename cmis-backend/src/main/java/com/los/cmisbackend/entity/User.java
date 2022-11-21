@@ -31,9 +31,7 @@ public class User {
     @JsonDeserialize(using = BCryptPasswordDeserializer.class )
     private String password;
 
-    @ManyToMany(fetch=FetchType.LAZY,
-            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
-                    CascadeType.DETACH, CascadeType.REFRESH})
+    @ManyToMany(cascade= CascadeType.ALL)
     @JoinTable(
             name="bookmarked_post",
             inverseJoinColumns=@JoinColumn(name="post_id"),
@@ -63,7 +61,6 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
-        this.bookMarkedPosts = new ArrayList<>();
     }
 
     public int getId() {
