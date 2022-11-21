@@ -41,6 +41,17 @@ public class User {
     )
     private List<Post> bookMarkedPosts;
 
+    
+    @ManyToMany(fetch=FetchType.LAZY,
+            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(
+            name="community_follower",
+            inverseJoinColumns=@JoinColumn(name="community_id"),
+            joinColumns=@JoinColumn(name="user_id")
+    )
+    private List<Community> followingCommunities;
+
     // add communities
 
     public User () {
@@ -104,6 +115,17 @@ public class User {
         this.bookMarkedPosts = bookMarkedPosts;
     }
 
+    
+    public List<Community> getFollowingCommunities() {
+        return followingCommunities;
+    }
+
+    public void setFollowingCommunities(List<Community> followingCommunities) {
+        this.followingCommunities = followingCommunities;
+    }
+
+    
+
     @Override
     public String toString() {
         return "User{" +
@@ -114,4 +136,5 @@ public class User {
                 ", password='" + password + '\'' +
                 '}';
     }
+
 }

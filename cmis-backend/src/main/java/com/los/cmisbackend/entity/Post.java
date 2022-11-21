@@ -29,6 +29,10 @@ public class Post {
     )
     private List<User> users;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="community")
+    private Community community;
+
     public Post() {
 
     }
