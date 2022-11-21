@@ -1,11 +1,16 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.los.cmisbackend.util.BCryptPasswordDeserializer;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Size;
+import java.util.List;
 
 @Entity
 @Table(name="user")
@@ -25,10 +30,10 @@ public class User {
     @Column(name="email")
     private String email;
 
-    @Column(name="password")
+    @Size(min = 60, max = 60)
+    @Column(name="password", nullable = false, length = 60)
+    @JsonDeserialize(using = BCryptPasswordDeserializer.class )
     private String password;
-
-    // add posts
 
     // add communities
 
@@ -65,6 +70,7 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+        System.out.println(password);
     }
 
     public void setId(int id) {
