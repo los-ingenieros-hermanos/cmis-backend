@@ -3,13 +3,9 @@ package com.los.cmisbackend.entity;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.los.cmisbackend.util.BCryptPasswordDeserializer;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,6 +31,16 @@ public class User {
     @JsonDeserialize(using = BCryptPasswordDeserializer.class )
     private String password;
 
+    @ManyToMany(fetch=FetchType.LAZY,
+            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(
+            name="bookmarked_post",
+            inverseJoinColumns=@JoinColumn(name="post_id"),
+            joinColumns=@JoinColumn(name="user_id")
+    )
+    private List<Post> bookMarkedPosts;
+
     // add communities
 
     public User () {
@@ -46,6 +52,7 @@ public class User {
         this.lastName = lastName;
         this.email = email;
         this.password = password;
+        this.bookMarkedPosts = new ArrayList<>();
     }
 
     public int getId() {
@@ -87,6 +94,14 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public List<Post> getBookMarkedPosts() {
+        return bookMarkedPosts;
+    }
+
+    public void setBookMarkedPosts(List<Post> bookMarkedPosts) {
+        this.bookMarkedPosts = bookMarkedPosts;
     }
 
     @Override

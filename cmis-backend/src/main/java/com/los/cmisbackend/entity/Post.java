@@ -1,6 +1,8 @@
 package com.los.cmisbackend.entity;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="post")
@@ -17,6 +19,16 @@ public class Post {
     @Column(name="text")
     private String text;
 
+    @ManyToMany(fetch=FetchType.LAZY,
+            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
+                    CascadeType.DETACH, CascadeType.REFRESH})
+    @JoinTable(
+            name="bookmarked_post",
+            joinColumns=@JoinColumn(name="post_id"),
+            inverseJoinColumns=@JoinColumn(name="user_id")
+    )
+    private List<User> users;
+
     public Post() {
 
     }
@@ -24,6 +36,7 @@ public class Post {
     public Post(String title, String text) {
         this.title = title;
         this.text = text;
+        this.users = new ArrayList<>();
     }
 
     public int getId() {
@@ -48,6 +61,14 @@ public class Post {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
     }
 
     @Override
