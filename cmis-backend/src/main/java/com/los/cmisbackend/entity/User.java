@@ -31,26 +31,14 @@ public class User {
     @JsonDeserialize(using = BCryptPasswordDeserializer.class )
     private String password;
 
-    @ManyToMany(cascade= CascadeType.ALL)
-    @JoinTable(
-            name="bookmarked_post",
-            inverseJoinColumns=@JoinColumn(name="post_id"),
-            joinColumns=@JoinColumn(name="user_id")
-    )
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "bookmarkedpost_user",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
     private List<Post> bookMarkedPosts;
 
-    
-    @ManyToMany(fetch=FetchType.LAZY,
-            cascade= {CascadeType.PERSIST, CascadeType.MERGE,
-                    CascadeType.DETACH, CascadeType.REFRESH})
-    @JoinTable(
-            name="community_follower",
-            inverseJoinColumns=@JoinColumn(name="community_id"),
-            joinColumns=@JoinColumn(name="user_id")
-    )
+    @ManyToMany(mappedBy = "followers")
     private List<Community> followingCommunities;
-
-    // add communities
 
     public User () {
 

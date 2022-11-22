@@ -19,16 +19,11 @@ public class Post {
     @Column(name="text")
     private String text;
 
-    @ManyToMany(cascade= CascadeType.ALL)
-    @JoinTable(
-            name="bookmarked_post",
-            joinColumns=@JoinColumn(name="post_id"),
-            inverseJoinColumns=@JoinColumn(name="user_id")
-    )
+    @ManyToMany(mappedBy = "bookMarkedPosts")
     private List<User> users;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="community")
+    @ManyToOne
+    @JoinColumn(name="community_id")
     private Community community;
 
     public Post() {

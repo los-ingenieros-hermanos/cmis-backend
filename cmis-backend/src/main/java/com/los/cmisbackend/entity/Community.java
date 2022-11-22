@@ -54,18 +54,13 @@ public class Community {
 	@Column(name="password", nullable = false, length = 60)
 	private String password;
 
-	@OneToMany(mappedBy = "community", fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "community")
 	private List<Post> posts;
 
-	@ManyToMany(
-		fetch=FetchType.LAZY,
-		cascade= {CascadeType.PERSIST, CascadeType.MERGE,
-		CascadeType.DETACH, CascadeType.REFRESH})
-	@JoinTable(
-		name="community_follower",
-		inverseJoinColumns=@JoinColumn(name="follower_id"),
-		joinColumns=@JoinColumn(name="community_id")
-	)
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "community_follower",
+			joinColumns = @JoinColumn(name = "community_id", referencedColumnName = "id"),
+			inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
 	private List<User> followers;
 
 	// add image
