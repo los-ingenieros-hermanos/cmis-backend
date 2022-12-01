@@ -3,7 +3,9 @@ package com.los.cmisbackend.entity;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.los.cmisbackend.util.BCryptPasswordDeserializer;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -36,32 +38,30 @@ import javax.persistence.JoinColumn;
 public class Community {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	//@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
-	private int id;
+	private Long id;
 
-	@Column(name="name", nullable = false, length = 45)
+	@Column(name="name")
 	private String name;
 
-	@Column(name="email", nullable = false, length = 45, unique = true)
+	@Column(name="email")
 	private String email;
 
 	@Column(name="info", length = 120)
 	private String info;
 
-	@Size(min = 60, max = 60)
-	@JsonDeserialize(using = BCryptPasswordDeserializer.class )
-	@Column(name="password", nullable = false, length = 60)
+	@Column(name="password")
 	private String password;
 
 	@OneToMany(mappedBy = "community")
-	private List<Post> posts;
+	private Set<Post> posts = new HashSet<>();
 
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "community_follower",
 			joinColumns = @JoinColumn(name = "community_id", referencedColumnName = "id"),
-			inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
-	private List<User> followers;
+			inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"))
+	private Set<Student> followers = new HashSet<>();
 
 	// add image
 	// posts
@@ -71,20 +71,21 @@ public class Community {
 	}
 
 
-	public Community(String name, String email, String info, String password) {
+	public Community(Long id, String name, String email, String info, String password) {
+		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.info = info;
 		this.password = password;
 	}
 
-	public int getId() {
+	public Long getId() {
 		return id;
 	}
 
 
 
-	public void setId(int id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -134,22 +135,22 @@ public class Community {
 
 	
 
-	public List<Post> getPosts() {
+	public Set<Post> getPosts() {
 		return posts;
 	}
 
 
-	public void setPosts(List<Post> posts) {
+	public void setPosts(Set<Post> posts) {
 		this.posts = posts;
 	}
 
 
-	public List<User> getFollowers() {
+	public Set<Student> getFollowers() {
 		return followers;
 	}
 
 
-	public void setFollowers(List<User> followers) {
+	public void setFollowers(Set<Student> followers) {
 		this.followers = followers;
 	}
 
