@@ -1,8 +1,8 @@
 package com.los.cmisbackend.entity;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name="post")
@@ -11,7 +11,7 @@ public class Post {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name="id")
-    private int id;
+    private Long id;
 
     @Column(name="title")
     private String title;
@@ -20,7 +20,7 @@ public class Post {
     private String text;
 
     @ManyToMany(mappedBy = "bookMarkedPosts")
-    private List<User> users;
+    private Set<Student> students = new HashSet<>();
 
     @ManyToOne
     @JoinColumn(name="community_id")
@@ -35,11 +35,11 @@ public class Post {
         this.text = text;
     }
 
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -59,12 +59,12 @@ public class Post {
         this.text = text;
     }
 
-    public List<User> getUsers() {
-        return users;
+    public Set<Student> getUsers() {
+        return students;
     }
 
-    public void setUsers(List<User> users) {
-        this.users = users;
+    public void setUsers(Set<Student> students) {
+        this.students = students;
     }
 
     @Override
