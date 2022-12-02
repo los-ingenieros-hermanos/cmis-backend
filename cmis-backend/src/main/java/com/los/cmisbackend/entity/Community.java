@@ -7,19 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
-import javax.persistence.JoinColumn;
 
 /*
 +----------+--------------+------+-----+-----------+-------------------+
@@ -38,125 +27,75 @@ import javax.persistence.JoinColumn;
 public class Community {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
 	private Long id;
 
-	@Column(name="name")
-	private String name;
-
-	@Column(name="email")
-	private String email;
+	@OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+	@MapsId
+	@JoinColumn(name= "user_id")
+	private User user;
 
 	@Column(name="info", length = 120)
 	private String info;
 
-	@Column(name="password")
-	private String password;
-
-	@OneToMany(mappedBy = "community")
-	private Set<Post> posts = new HashSet<>();
-
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany(fetch = FetchType.LAZY,
+			cascade = {
+					CascadeType.PERSIST,
+					CascadeType.MERGE
+			})
 	@JoinTable(name = "community_follower",
-			joinColumns = @JoinColumn(name = "community_id", referencedColumnName = "id"),
-			inverseJoinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"))
+			joinColumns = { @JoinColumn(name = "community_id") },
+			inverseJoinColumns = { @JoinColumn(name = "student_id") })
 	private Set<Student> followers = new HashSet<>();
 
 	// add image
-	// posts
 	// add members
 
 	public Community() {
 	}
 
 
-	public Community(String name, String email, String info, String password) {
-		this.name = name;
-		this.email = email;
+	public Community(String info) {
 		this.info = info;
-		this.password = password;
 	}
 
 	public Long getId() {
 		return id;
 	}
 
-
-
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-
-
-	public String getName() {
-		return name;
-	}
-
-
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-
-
-	public String getEmail() {
-		return email;
-	}
-
-
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-
 
 	public String getInfo() {
 		return info;
 	}
 
-
-
 	public void setInfo(String info) {
 		this.info = info;
 	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	
-
-	public Set<Post> getPosts() {
-		return posts;
-	}
-
-
-	public void setPosts(Set<Post> posts) {
-		this.posts = posts;
-	}
-
 
 	public Set<Student> getFollowers() {
 		return followers;
 	}
 
-
 	public void setFollowers(Set<Student> followers) {
 		this.followers = followers;
 	}
 
-
-	@Override
-	public String toString() {
-		return "Community [id=" + id + ", name=" + name + ", email=" + email + ", info=" + info + "]";
+	public User getUser() {
+		return user;
 	}
 
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public void addFollower(Student follower) {
+		followers.add(follower);
+	}
+
+	public void removeFollower(Student follower) {
+		followers.remove(follower);
+	}
 }
