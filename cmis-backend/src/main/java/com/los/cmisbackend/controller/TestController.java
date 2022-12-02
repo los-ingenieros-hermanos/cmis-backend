@@ -1,5 +1,6 @@
 package com.los.cmisbackend.controller;
 
+import com.los.cmisbackend.dao.StudentRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,15 +11,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/test")
 public class TestController {
+
     @GetMapping("/all")
     public String allAccess() {
         return "Public Content.";
     }
 
-    @GetMapping("/user")
+    @GetMapping("/student")
     @PreAuthorize("hasRole('STUDENT') or hasRole('ADMIN')")
-    public String userAccess() {
-        return "User Content.";
+    public String studentAccess() {
+        return "Student Content.";
     }
 
     @GetMapping("/community")
