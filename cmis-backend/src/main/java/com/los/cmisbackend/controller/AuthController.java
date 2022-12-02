@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.RoleRepository;
+import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
-import com.los.cmisbackend.entity.ERole;
-import com.los.cmisbackend.entity.Role;
-import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.payload.request.LoginRequest;
 import com.los.cmisbackend.payload.request.SignupRequest;
 import com.los.cmisbackend.payload.response.MessageResponse;
@@ -51,6 +51,12 @@ public class AuthController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+    @Autowired
+    StudentRepository studentRepository;
+
+    @Autowired
+    CommunityRepository communityRepository;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -108,12 +114,17 @@ public class AuthController {
                         Role modRole = roleRepository.findByName(ERole.ROLE_COMMUNITY)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(modRole);
-
+                        Community community = new Community();
+                        community.setUser(user);
+                        communityRepository.save(community);
                         break;
                     default:
                         Role userRole = roleRepository.findByName(ERole.ROLE_STUDENT)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(userRole);
+                        Student student = new Student();
+                        student.setUser(user);
+                        studentRepository.save(student);
                 }
             });
         }
