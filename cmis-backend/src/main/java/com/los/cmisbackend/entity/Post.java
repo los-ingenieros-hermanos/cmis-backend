@@ -1,5 +1,10 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,11 +24,20 @@ public class Post {
     @Column(name="text")
     private String text;
 
-    @ManyToMany(mappedBy = "bookMarkedPosts")
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "bookmarkedPosts")
+    @JsonIgnore
     private Set<Student> students = new HashSet<>();
 
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name="community_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonIgnore
     private Community community;
 
     public Post() {
@@ -59,12 +73,28 @@ public class Post {
         this.text = text;
     }
 
-    public Set<Student> getUsers() {
+    public Set<Student> getStudents() {
         return students;
     }
 
-    public void setUsers(Set<Student> students) {
+    public void setStudents(Set<Student> students) {
         this.students = students;
+    }
+
+    public Community getCommunity() {
+        return community;
+    }
+
+    public void setCommunity(Community community) {
+        this.community = community;
+    }
+
+    public void addStudent(Student student) {
+        students.add(student);
+    }
+
+    public void removeStudent(Student student) {
+        students.remove(student);
     }
 
     @Override
