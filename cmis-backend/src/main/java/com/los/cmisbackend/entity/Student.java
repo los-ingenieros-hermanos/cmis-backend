@@ -1,5 +1,6 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.los.cmisbackend.util.BCryptPasswordDeserializer;
 
@@ -15,88 +16,58 @@ import java.util.Set;
 public class Student {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Long id;
+    Long id;
 
-    @Column(name="first_name")
-    private String firstName;
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @MapsId
+    @JoinColumn(name= "user_id")
+    private User user;
 
-    @Column(name="last_name")
-    private String lastName;
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "bookmarkedPost_student",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "post_id") })
+    private Set<Post> bookmarkedPosts = new HashSet<>();
 
-    @Column(name="email")
-    private String email;
-
-    @Column(name="password")
-    private String password;
-
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "bookmarkedpost_student",
-            joinColumns = @JoinColumn(name = "student_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
-    private Set<Post> bookMarkedPosts = new HashSet<>();
-
-    @ManyToMany(mappedBy = "followers")
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "followers")
+    @JsonIgnore
     private Set<Community> followingCommunities = new HashSet<>();
 
     public Student () {
 
     }
 
-    public Student(String firstName, String lastName, String email, String password) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
-        this.password = password;
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-        System.out.println(password);
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public Set<Post> getBookMarkedPosts() {
-        return bookMarkedPosts;
+        return bookmarkedPosts;
     }
 
     public void setBookMarkedPosts(Set<Post> bookMarkedPosts) {
-        this.bookMarkedPosts = bookMarkedPosts;
+        this.bookmarkedPosts = bookMarkedPosts;
     }
 
 
@@ -108,15 +79,19 @@ public class Student {
         this.followingCommunities = followingCommunities;
     }
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                '}';
+    public void addPost(Post post) {
+        bookmarkedPosts.add(post);
     }
 
+    public void removePost(Post post) {
+        bookmarkedPosts.remove(post);
+    }
+
+    public void addCommunityToFollowing(Community community) {
+        followingCommunities.add(community);
+    }
+
+    public void deleteCommunityFromFollowing(Community community) {
+        followingCommunities.remove(community);
+    }
 }
