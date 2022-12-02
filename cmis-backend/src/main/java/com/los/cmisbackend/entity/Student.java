@@ -15,8 +15,7 @@ import java.util.Set;
 public class Student {
 
     @Id
-    //@GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="id")
+    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
     @Column(name="first_name")
@@ -44,8 +43,7 @@ public class Student {
 
     }
 
-    public Student(Long id, String firstName, String lastName, String email, String password) {
-        this.id = id;
+    public Student(String firstName, String lastName, String email, String password) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
