@@ -6,6 +6,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import com.los.cmisbackend.entity.Community;
 
 @RepositoryRestResource(path="communities")
-public interface CommunityRepository extends JpaRepository<Community, Integer> {
+public interface CommunityRepository extends JpaRepository<Community, Long> {
 
 }
