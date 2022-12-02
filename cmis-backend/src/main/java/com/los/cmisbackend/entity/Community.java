@@ -38,7 +38,7 @@ import javax.persistence.JoinColumn;
 public class Community {
 	
 	@Id
-	//@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
 	private Long id;
 
@@ -71,8 +71,7 @@ public class Community {
 	}
 
 
-	public Community(Long id, String name, String email, String info, String password) {
-		this.id = id;
+	public Community(String name, String email, String info, String password) {
 		this.name = name;
 		this.email = email;
 		this.info = info;
