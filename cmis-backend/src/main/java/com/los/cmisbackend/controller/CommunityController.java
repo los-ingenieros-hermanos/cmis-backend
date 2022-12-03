@@ -6,11 +6,14 @@ import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.util.Base64ImageEncoder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +33,16 @@ public class CommunityController {
     @Autowired
     StudentRepository studentRepository;
 
+    private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
+
     @GetMapping({ "/communities/{id}", "/users/{id}/communities" })
     public ResponseEntity<Community> getCommunityById(@PathVariable(value = "id") Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+
+        if(community.getImage() != null){
+            community.setImage(community.getId() + ".image (go to `api/cmis/communities/{id}/image` to get full base64 string)" );
+        }
 
         return new ResponseEntity<>(community, HttpStatus.OK);
     }
@@ -133,4 +142,29 @@ public class CommunityController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PutMapping("/communities/{id}/updateImage")
+	public ResponseEntity<Community> updateImage(@PathVariable(value = "id") Long id,
+							@RequestParam("image") MultipartFile image)
+	{
+        Community community = communityRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
+
+		community.setImage(imageEncoder.encodeImage(image));
+
+        communityRepository.save(community);
+
+        if(community.getImage() != null){
+            community.setImage(community.getId() + ".image (go to `api/cmis/communities/{id}/image` to get full base64 string)");
+        }
+
+        return new ResponseEntity<>(community, HttpStatus.OK);
+	}
+
+    @GetMapping("/communities/{id}/image")
+    public String getCommunityImage(@PathVariable(value = "id") Long id) {
+        Community community = communityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+
+        return community.getImage();
+    }
 }
