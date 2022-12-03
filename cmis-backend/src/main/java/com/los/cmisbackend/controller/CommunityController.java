@@ -99,7 +99,8 @@ public class CommunityController {
     }
 
     @PostMapping("/students/{followerId}/followingCommunities")
-    public ResponseEntity<Community> addCommunityToStudentsFollowers(@PathVariable(value = "followerId") Long followerId, @RequestBody Community communityRequest) {
+    public ResponseEntity<Community> addCommunityToStudentsFollowers(@PathVariable(value = "followerId") Long followerId,
+                                                                     @RequestBody Community communityRequest) {
         Community community = studentRepository.findById(followerId).map(follower -> {
             Long communityId = communityRequest.getId();
 
@@ -107,8 +108,8 @@ public class CommunityController {
             if (communityId != null) {
                 Community _community = communityRepository.findById(communityId)
                         .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-                follower.addCommunityToFollowing(_community);
-                studentRepository.save(follower);
+                _community.addFollower(follower);
+                communityRepository.save(_community);
                 return _community;
             }
 
@@ -126,8 +127,8 @@ public class CommunityController {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-        follower.deleteCommunityFromFollowing(community);
-        studentRepository.save(follower);
+        community.removeFollower(follower);
+        communityRepository.save(community);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
