@@ -2,7 +2,6 @@
 CMIS backend implementation using Spring Boot.
 
 # Important Notes
-- To sign up work, user-roles must be entered to database via insert_roles script.
 - All actions of community, post, student requires login.
 - User id, community id, student id are shared.
 
