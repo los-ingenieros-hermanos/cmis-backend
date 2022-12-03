@@ -4,6 +4,7 @@ import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
+import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,11 +78,20 @@ public class StudentController {
 
     @DeleteMapping("/students/{id}")
     public ResponseEntity<HttpStatus> deleteStudent(@PathVariable("id") Long id) {
-        studentRepository.deleteById(id);
+        //studentRepository.deleteById(id);
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
+        List<Community> communities = communityRepository.findCommunitiesByFollowersId(id);
 
+        for(Community c: communities) {
+            c.removeFollower(student);
+            communityRepository.save(c);
+        }
+        studentRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    // bug occurs if any of the students follow a community, fix bug
     @DeleteMapping("/students")
     public ResponseEntity<HttpStatus> deleteAllStudents() {
         studentRepository.deleteAll();
