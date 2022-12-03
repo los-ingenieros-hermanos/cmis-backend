@@ -1,14 +1,9 @@
 package com.los.cmisbackend.entity;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.los.cmisbackend.util.BCryptPasswordDeserializer;
-
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 
 /*
 +----------+--------------+------+-----+-----------+-------------------+
@@ -48,8 +43,10 @@ public class Community {
 			inverseJoinColumns = { @JoinColumn(name = "student_id") })
 	private Set<Student> followers = new HashSet<>();
 
-	// add image
-	// add members
+	@Lob
+	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
+    private String image;
+
 
 	public Community() {
 	}
@@ -98,4 +95,13 @@ public class Community {
 	public void removeFollower(Student follower) {
 		followers.remove(follower);
 	}
+
+	public String getImage() {
+		return image;
+	}
+
+	public void setImage(String image) {
+		this.image = image;
+	}
+	
 }
