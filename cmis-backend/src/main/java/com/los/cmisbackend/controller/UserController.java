@@ -58,8 +58,6 @@ public class UserController {
             communityRepository.deleteById(id);
         }
 
-        userRepository.deleteById(id);
-
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
