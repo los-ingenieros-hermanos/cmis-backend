@@ -12,6 +12,9 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import com.los.cmisbackend.util.Base64ImageEncoder;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,8 @@ public class StudentController {
 
     @Autowired
     CommunityRepository communityRepository;
+
+    private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
 
     @GetMapping({ "/students/{id}", "/users/{id}/students" })
     public ResponseEntity<Student> getStudentById(@PathVariable(value = "id") Long id) {
@@ -139,5 +144,28 @@ public class StudentController {
         communityRepository.save(community);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PutMapping("/students/{id}/updateImage")
+	public ResponseEntity<Student> updateImage(@PathVariable(value = "id") Long id,
+							@RequestParam("image") MultipartFile image)
+	{
+        Student student = studentRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
+
+		student.setImage(imageEncoder.encodeImage(image));
+
+        studentRepository.save(student);
+
+        return new ResponseEntity<>(student, HttpStatus.OK);
+	}
+
+    @GetMapping("/students/{id}/image")
+    public ResponseEntity<String> getStudentImage(@PathVariable(value = "id") Long id) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + id));
+
+        var image = student.getImage();
+        return new ResponseEntity<>(image, HttpStatus.OK);
     }
 }
