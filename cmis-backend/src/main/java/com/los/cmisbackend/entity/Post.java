@@ -40,6 +40,10 @@ public class Post {
     @JsonIgnore
     private Community community;
 
+    @Lob
+	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
+    private String image;
+
     public Post() {
 
     }
@@ -104,5 +108,13 @@ public class Post {
                 ", title='" + title + '\'' +
                 ", text='" + text + '\'' +
                 '}';
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
