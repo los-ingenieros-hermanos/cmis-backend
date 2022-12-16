@@ -40,10 +40,6 @@ public class CommunityController {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
 
-        if(community.getImage() != null){
-            community.setImage(community.getId() + ".image (go to `api/cmis/communities/{id}/image` to get full base64 string)" );
-        }
-
         return new ResponseEntity<>(community, HttpStatus.OK);
     }
 
@@ -153,18 +149,15 @@ public class CommunityController {
 
         communityRepository.save(community);
 
-        if(community.getImage() != null){
-            community.setImage(community.getId() + ".image (go to `api/cmis/communities/{id}/image` to get full base64 string)");
-        }
-
         return new ResponseEntity<>(community, HttpStatus.OK);
 	}
 
     @GetMapping("/communities/{id}/image")
-    public String getCommunityImage(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<String> getCommunityImage(@PathVariable(value = "id") Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
 
-        return community.getImage();
+        var image = community.getImage();
+        return new ResponseEntity<>(image, HttpStatus.OK);
     }
 }
