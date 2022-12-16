@@ -185,7 +185,7 @@ empty
 | GET   | /api/cmis/students | get all students |
 | GET | /api/cmis/students/{id} | get single student with given student id |
 | GET | /api/cmis/users/{userId}/students | get student through userId |
-| GET | /api/cmis/students/{id}/image |get student image (base65 string) |
+| GET | /api/cmis/students/{id}/image |get student image (base64 string) |
 | PUT | /api/cmis/students/{id} | update student |
 | PUT | /api/cmis/students/{id}/updateImage |update student image|
 | DELETE |/api/cmis/students/{id} | delete student |
