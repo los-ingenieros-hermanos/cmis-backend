@@ -6,11 +6,14 @@ import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
+import com.los.cmisbackend.util.Base64ImageEncoder;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,9 @@ public class PostController {
 
     @Autowired
     CommunityRepository communityRepository;
+
+    private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
+
 
     @GetMapping("/posts")
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -120,8 +126,10 @@ public class PostController {
 
     @PostMapping("/communities/{communityId}/posts")
     public ResponseEntity<Post> createPost(@PathVariable(value = "communityId") Long communityId,
-                                                 @RequestBody Post postRequest) {
+                                                 @RequestBody Post postRequest,
+                                                 final @RequestParam("image") MultipartFile image) {
         Post post = communityRepository.findById(communityId).map(community -> {
+            postRequest.setImage(imageEncoder.encodeImage(image));
             postRequest.setCommunity(community);
             return postRepository.save(postRequest);
         }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
