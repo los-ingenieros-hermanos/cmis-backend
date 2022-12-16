@@ -185,7 +185,9 @@ empty
 | GET   | /api/cmis/students | get all students |
 | GET | /api/cmis/students/{id} | get single student with given student id |
 | GET | /api/cmis/users/{userId}/students | get student through userId |
+| GET | /api/cmis/students/{id}/image |get student image (base65 string) |
 | PUT | /api/cmis/students/{id} | update student |
+| PUT | /api/cmis/students/{id}/updateImage |update student image|
 | DELETE |/api/cmis/students/{id} | delete student |
 | DELETE | /api/cmis/students | delete all students |
 | GET | api/cmis/communities/{communityId}/followers | get all followers(students) by community id
@@ -212,6 +214,11 @@ empty
 ### PUT -> /api/cmis/students/{id}
 **NOTE:Student does not have enough property to update yet.** 
 ```json
+
+```
+
+### PUT -> /api/cmis/students/{id}/updateImage 
+```
 
 ```
 
@@ -302,10 +309,16 @@ empty
                 "id": 1,
                 "name": "ROLE_STUDENT"
             }
-        ]
+        ],
+        "image" : //base64 string
     },
     "bookMarkedPosts": []
 }
+```
+
+### GET -> /api/cmis/students/{id}/image
+```
+    //base64 string 
 ```
 
 ### POST -> /api/cmis/users/{userId}/students
@@ -548,7 +561,9 @@ userId=6
 | ------ | --- | ------ |
 | GET   | "api/cmis/communities/{id}", "api/cmis/users/{id}/communities" | get community by id |
 | GET | /api/cmis/communities | get all communities |
+| GET | /api/cmis/communities/{id}/image | get community image |
 | PUT | /api/cmis/communities/{id} | update community |
+| PUT | /api/cmis/communities/{id}/updateImage | update community image |
 | DELETE | /api/cmis/communities/{id} | delete community |
 | DELETE | /api/cmis/communities | delete all communities |
 | GET | api/cmis/students/{followerId}/followingCommunities | get all followed communities of student |
@@ -567,12 +582,28 @@ userId=6
 
 ```
 
+### GET -> /api/cmis/communities/{id}/image
+
+```json
+    //base64 string
+```
+
+
 ### PUT -> /api/cmis/communities/{id}
 ```json
 {
     "info" : "sehpa tepsi tahta ve kavun."
 }
 ```
+
+### PUT -> /api/cmis/communities/{id}/updateImage
+```json
+{
+    //community fields
+}
+```
+
+
 
 ### DELETE -> /api/cmis/communities/{id} 
 ```json
