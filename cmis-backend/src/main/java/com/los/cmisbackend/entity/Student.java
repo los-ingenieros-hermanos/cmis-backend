@@ -41,6 +41,10 @@ public class Student {
             mappedBy = "followers")
     @JsonIgnore
     private Set<Community> followingCommunities = new HashSet<>();
+    
+	@Lob
+	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
+    private String image;
 
     public Student () {
 
@@ -94,4 +98,14 @@ public class Student {
     public void deleteCommunityFromFollowing(Community community) {
         followingCommunities.remove(community);
     }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    
 }
