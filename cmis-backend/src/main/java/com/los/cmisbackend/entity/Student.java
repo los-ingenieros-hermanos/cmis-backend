@@ -46,8 +46,22 @@ public class Student {
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
     private String image;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "student_tag",
+            joinColumns = @JoinColumn(name = "student_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<Tag> interests = new HashSet<>();
+
     public Student () {
 
+    }
+
+    public Student(User user, Set<Post> bookmarkedPosts, Set<Community> followingCommunities, String image, Set<Tag> interests) {
+        this.user = user;
+        this.bookmarkedPosts = bookmarkedPosts;
+        this.followingCommunities = followingCommunities;
+        this.image = image;
+        this.interests = interests;
     }
 
     public User getUser() {
@@ -107,5 +121,27 @@ public class Student {
         this.image = image;
     }
 
-    
+    public Set<Tag> getInterests() {
+        return interests;
+    }
+
+    public void setInterests(Set<Tag> interests) {
+        this.interests = interests;
+    }
+
+    public Set<Post> getBookmarkedPosts() {
+        return bookmarkedPosts;
+    }
+
+    public void setBookmarkedPosts(Set<Post> bookmarkedPosts) {
+        this.bookmarkedPosts = bookmarkedPosts;
+    }
+
+    public void addInterest(Tag tag) {
+        interests.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        interests.remove(tag);
+    }
 }
