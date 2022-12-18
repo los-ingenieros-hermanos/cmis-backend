@@ -12,4 +12,5 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
 
     Community findCommunityById(Long id);
     List<Community> findCommunitiesByFollowersId(Long id);
+    List<Community> findCommunitiesByTagsId(Long id);
 }
