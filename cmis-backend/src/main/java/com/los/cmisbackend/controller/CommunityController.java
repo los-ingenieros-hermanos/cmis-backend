@@ -2,6 +2,7 @@ package com.los.cmisbackend.controller;
 
 import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.StudentRepository;
+import com.los.cmisbackend.dao.TagRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.ERole;
@@ -11,6 +12,7 @@ import com.los.cmisbackend.payload.response.MessageResponse;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.Base64ImageEncoder;
 
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,9 @@ public class CommunityController {
 
     @Autowired
     StudentRepository studentRepository;
+
+    @Autowired
+    TagRepository tagRepository;
 
     private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
 
@@ -212,5 +217,12 @@ public class CommunityController {
 
         var image = community.getImage();
         return new ResponseEntity<>(image, HttpStatus.OK);
+    }
+
+    @GetMapping("/tags/{id}/communities")
+    public ResponseEntity<List<Community>> getCommunitiesByTagId(@PathVariable(value = "id") Long id) {
+        List<Community> communities = communityRepository.findCommunitiesByTagsId(id);
+
+        return new ResponseEntity<>(communities, HttpStatus.OK);
     }
 }
