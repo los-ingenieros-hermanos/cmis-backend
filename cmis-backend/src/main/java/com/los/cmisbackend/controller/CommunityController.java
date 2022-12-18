@@ -4,14 +4,22 @@ import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
+import com.los.cmisbackend.entity.ERole;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.payload.response.MessageResponse;
+import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.Base64ImageEncoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -71,25 +79,49 @@ public class CommunityController {
     @PutMapping("/communities/{id}")
     public ResponseEntity<Community> updateCommunity(@PathVariable("id") Long id,
                                                  @RequestBody Community communitiesRequest) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        // check existence
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
-        community.setFollowers(communitiesRequest.getFollowers());
-        community.setInfo(communitiesRequest.getInfo());
-        // handle posts !!
+        if(communitiesRequest.getInfo() != null)
+            community.setInfo(communitiesRequest.getInfo());
+
+        if(communitiesRequest.getImage() != null)
+            community.setImage(communitiesRequest.getImage());
+
 
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);
     }
 
     @DeleteMapping("/communities/{id}")
     public ResponseEntity<HttpStatus> deleteCommunity(@PathVariable("id") Long id) {
-        communityRepository.deleteById(id);
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(id))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
+        communityRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/communities")
     public ResponseEntity<HttpStatus> deleteAllCommunities() {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         communityRepository.deleteAll();
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -97,6 +129,7 @@ public class CommunityController {
 
     @GetMapping("/students/{followerId}/followingCommunities")
     public ResponseEntity<Set<Community>> getAllFollowedCommunities(@PathVariable(value = "followerId") Long followerId) {
+
         Student follower = studentRepository.findById(followerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
         Set<Community> communities = follower.getFollowingCommunities();
@@ -106,6 +139,12 @@ public class CommunityController {
     @PostMapping("/students/{followerId}/followingCommunities")
     public ResponseEntity<Community> addCommunityToStudentsFollowers(@PathVariable(value = "followerId") Long followerId,
                                                                      @RequestBody Community communityRequest) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !userDetails.getId().equals(followerId))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Community community = studentRepository.findById(followerId).map(follower -> {
             Long communityId = communityRequest.getId();
 
@@ -125,7 +164,15 @@ public class CommunityController {
     }
 
     @DeleteMapping("/students/{followerId}/followingCommunities/{communityId}")
-    public ResponseEntity<HttpStatus> deleteCommunityFromStudentsFollowers(@PathVariable(value = "followerId") Long followerId, @PathVariable(value = "communityId") Long communityId) {
+    public ResponseEntity<HttpStatus> deleteCommunityFromStudentsFollowers(
+            @PathVariable(value = "followerId") Long followerId, @PathVariable(value = "communityId") Long communityId) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !userDetails.getId().equals(followerId))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Student follower = studentRepository.findById(followerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
 
@@ -142,6 +189,12 @@ public class CommunityController {
 	public ResponseEntity<Community> updateImage(@PathVariable(value = "id") Long id,
 							@RequestParam("image") MultipartFile image)
 	{
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Community community = communityRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
