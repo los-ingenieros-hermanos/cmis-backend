@@ -47,10 +47,22 @@ public class Community {
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
     private String image;
 
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "community_tag",
+			joinColumns = @JoinColumn(name = "community_id"),
+			inverseJoinColumns = @JoinColumn(name = "tag_id"))
+	private Set<Tag> tags = new HashSet<>();
 
 	public Community() {
 	}
 
+	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags) {
+		this.user = user;
+		this.info = info;
+		this.followers = followers;
+		this.image = image;
+		this.tags = tags;
+	}
 
 	public Community(String info) {
 		this.info = info;
@@ -103,5 +115,20 @@ public class Community {
 	public void setImage(String image) {
 		this.image = image;
 	}
-	
+
+	public Set<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(Set<Tag> tags) {
+		this.tags = tags;
+	}
+
+	public void addTag(Tag tag) {
+		tags.add(tag);
+	}
+
+	public void removeTag(Tag tag) {
+		tags.remove(tag);
+	}
 }
