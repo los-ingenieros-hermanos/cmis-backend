@@ -4,10 +4,14 @@ import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -29,8 +33,8 @@ public class UserController {
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = new ArrayList<User>();
 
+        List<User> users = new ArrayList<User>();
 
         userRepository.findAll().forEach(users::add);
 
@@ -51,6 +55,14 @@ public class UserController {
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") Long id) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(id))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         if (studentRepository.existsById(id)) {
             studentRepository.deleteById(id);
         }
@@ -63,6 +75,13 @@ public class UserController {
 
     @DeleteMapping("/users")
     public ResponseEntity<HttpStatus> deleteAllUsers() {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         userRepository.deleteAll();
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

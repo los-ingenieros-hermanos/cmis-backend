@@ -7,10 +7,14 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.los.cmisbackend.util.Base64ImageEncoder;
@@ -60,6 +64,12 @@ public class StudentController {
     @PostMapping("/users/{userId}/students")
     public ResponseEntity<Student> createStudent(@PathVariable(value = "userId") Long userId,
                                                          @RequestBody Student studentsRequest) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found User with id = " + userId));
 
@@ -72,17 +82,33 @@ public class StudentController {
     @PutMapping("/students/{id}")
     public ResponseEntity<Student> updateStudent(@PathVariable("id") Long id,
                                                          @RequestBody Student studentsRequest) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(id))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
-        student.setBookMarkedPosts(studentsRequest.getBookMarkedPosts());
-        student.setFollowingCommunities(studentsRequest.getFollowingCommunities());
+        if(studentsRequest.getImage() != null)
+            student.setImage(studentsRequest.getImage());
 
         return new ResponseEntity<>(studentRepository.save(student), HttpStatus.OK);
     }
 
     @DeleteMapping("/students/{id}")
     public ResponseEntity<HttpStatus> deleteStudent(@PathVariable("id") Long id) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(id))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         //studentRepository.deleteById(id);
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
@@ -99,6 +125,13 @@ public class StudentController {
     // bug occurs if any of the students follow a community, fix bug
     @DeleteMapping("/students")
     public ResponseEntity<HttpStatus> deleteAllStudents() {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         studentRepository.deleteAll();
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -114,7 +147,16 @@ public class StudentController {
     }
 
     @PostMapping("/communities/{communityId}/followers")
-    public ResponseEntity<Student> addFollowerToCommunity(@PathVariable(value = "communityId") Long communityId, @RequestBody Student followerRequest) {
+    public ResponseEntity<Student> addFollowerToCommunity(
+            @PathVariable(value = "communityId") Long communityId, @RequestBody Student followerRequest) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(followerRequest.getId()))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Student follower = communityRepository.findById(communityId).map(community -> {
             Long followerId = followerRequest.getId();
 
@@ -135,6 +177,15 @@ public class StudentController {
 
     @DeleteMapping("/communities/{communityId}/followers/{followerId}")
     public ResponseEntity<HttpStatus> deleteFollowerFromCommunity(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "followerId") Long followerId) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(followerId))
+                | (userDetails.getId().equals(communityId))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
@@ -150,6 +201,13 @@ public class StudentController {
 	public ResponseEntity<Student> updateImage(@PathVariable(value = "id") Long id,
 							@RequestParam("image") MultipartFile image)
 	{
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(id))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
         Student student = studentRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
