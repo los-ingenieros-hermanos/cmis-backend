@@ -7,10 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import com.los.cmisbackend.dao.CommunityRepository;
-import com.los.cmisbackend.dao.RoleRepository;
-import com.los.cmisbackend.dao.StudentRepository;
-import com.los.cmisbackend.dao.UserRepository;
+import com.los.cmisbackend.dao.*;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.payload.request.LoginRequest;
 import com.los.cmisbackend.payload.request.SignupRequest;
@@ -57,6 +54,9 @@ public class AuthController {
 
     @Autowired
     CommunityRepository communityRepository;
+
+    @Autowired
+    AdminRepository adminRepository;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -107,16 +107,23 @@ public class AuthController {
                     case "admin":
                         Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
+                        //roles.add(adminRole);
 
                         break;
                     case "community":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_COMMUNITY)
+                        Role modRole = roleRepository.findByName(ERole.ROLE_UNVERIFIED)
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(modRole);
                         Community community = new Community();
+
+                        System.out.println(adminRepository.findAll());
+                        Admin admin = adminRepository.findAll().get(0);
+
                         community.setUser(user);
                         communityRepository.save(community);
+
+                        admin.addUnverifiedCommunity(user);
+                        adminRepository.save(admin);
                         break;
                     default:
                         Role userRole = roleRepository.findByName(ERole.ROLE_STUDENT)
