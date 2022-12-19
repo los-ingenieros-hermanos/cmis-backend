@@ -1,5 +1,7 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,6 +43,7 @@ public class Community {
 	@JoinTable(name = "community_follower",
 			joinColumns = { @JoinColumn(name = "community_id") },
 			inverseJoinColumns = { @JoinColumn(name = "student_id") })
+	@JsonIgnore
 	private Set<Student> followers = new HashSet<>();
 
 	@Lob
