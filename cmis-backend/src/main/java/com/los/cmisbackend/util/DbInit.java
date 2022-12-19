@@ -2,15 +2,18 @@ package com.los.cmisbackend.util;
 
 import javax.annotation.PostConstruct;
 
+import com.los.cmisbackend.dao.AdminRepository;
 import com.los.cmisbackend.dao.TagRepository;
-import com.los.cmisbackend.entity.ETag;
-import com.los.cmisbackend.entity.Tag;
+import com.los.cmisbackend.dao.UserRepository;
+import com.los.cmisbackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.los.cmisbackend.dao.RoleRepository;
-import com.los.cmisbackend.entity.ERole;
-import com.los.cmisbackend.entity.Role;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class DbInit {
@@ -21,18 +24,29 @@ public class DbInit {
 	@Autowired
 	private TagRepository tagRepository;
 
+	@Autowired
+	private AdminRepository adminRepository;
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	PasswordEncoder encoder;
+
 	@PostConstruct
 	private void init() {
 	
-		Long num = (long) 3;
+		Long num = (long) 4;
 		
 		if(!(roleRepository.findById(num).isPresent())){
 			Role role1 = new Role(ERole.ROLE_STUDENT);
 			Role role2 = new Role(ERole.ROLE_ADMIN);
 			Role role3 = new Role(ERole.ROLE_COMMUNITY);
+			Role role4 = new Role(ERole.ROLE_UNVERIFIED);
 			roleRepository.save(role1);
 			roleRepository.save(role2);
 			roleRepository.save(role3);
+			roleRepository.save(role4);
 		}
 
 		if(!(tagRepository.findById((long) 19).isPresent())) {
@@ -55,6 +69,20 @@ public class DbInit {
 			tagRepository.save(new Tag(ETag.TAG_SOCIAL));
 			tagRepository.save(new Tag(ETag.TAG_SPORT));
 			tagRepository.save(new Tag(ETag.TAG_TEAM));
+		}
+
+		if(adminRepository.findAll().isEmpty()) {
+			Admin admin = new Admin();
+			User user = new User("ADMIN", null, "admin@gtu.edu.tr"
+					, "admin@gtu.edu.tr", encoder.encode("admin123"));
+			admin.setUser(user);
+			adminRepository.save(admin);
+			Set<Role> roles = new HashSet<>();
+			Role role = roleRepository.findByName(ERole.ROLE_ADMIN)
+				.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			roles.add(role);
+			user.setRoles(roles);
+			userRepository.save(user);
 		}
 	}
 }
