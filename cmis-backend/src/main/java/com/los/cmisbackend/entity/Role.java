@@ -1,6 +1,7 @@
 package com.los.cmisbackend.entity;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "roles")
@@ -36,4 +37,5 @@ public class Role {
     public void setName(ERole name) {
         this.name = name;
     }
+
 }
