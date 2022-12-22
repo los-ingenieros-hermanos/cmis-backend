@@ -50,21 +50,37 @@ public class Community {
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
     private String image;
 
+	@Lob
+	@Column(name = "banner", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
+    private String banner;
+
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "community_tag",
 			joinColumns = @JoinColumn(name = "community_id"),
 			inverseJoinColumns = @JoinColumn(name = "tag_id"))
 	private Set<Tag> tags = new HashSet<>();
 
+	@ManyToMany(fetch = FetchType.LAZY,
+			cascade = {
+					CascadeType.PERSIST,
+					CascadeType.MERGE
+			})
+	@JoinTable(name = "community_member",
+			joinColumns = { @JoinColumn(name = "community_id") },
+			inverseJoinColumns = { @JoinColumn(name = "student_id") })
+	@JsonIgnore
+	private Set<Student> members = new HashSet<>();
+
 	public Community() {
 	}
 
-	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags) {
+	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags, Set<Student> members) {
 		this.user = user;
 		this.info = info;
 		this.followers = followers;
 		this.image = image;
 		this.tags = tags;
+		this.members = members;
 	}
 
 	public Community(String info) {
@@ -133,5 +149,29 @@ public class Community {
 
 	public void removeTag(Tag tag) {
 		tags.remove(tag);
+	}
+
+	public Set<Student> getMembers() {
+		return members;
+	}
+
+	public void setMembers(Set<Student> members) {
+		this.members = members;
+	}
+
+	public void addMember(Student member) {
+		members.add(member);
+	}
+
+	public void removeMember(Student member) {
+		members.remove(member);
+	}
+
+	public String getBanner() {
+		return banner;
+	}
+
+	public void setBanner(String banner) {
+		this.banner = banner;
 	}
 }
