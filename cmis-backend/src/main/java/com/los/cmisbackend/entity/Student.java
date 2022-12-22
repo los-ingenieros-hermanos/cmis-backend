@@ -52,16 +52,28 @@ public class Student {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> interests = new HashSet<>();
 
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "members")
+    @JsonIgnore
+    private Set<Community> memberOf = new HashSet<>();
+
     public Student () {
 
     }
 
-    public Student(User user, Set<Post> bookmarkedPosts, Set<Community> followingCommunities, String image, Set<Tag> interests) {
+    public Student(User user, Set<Post> bookmarkedPosts, Set<Community> followingCommunities,
+                    String image, Set<Tag> interests, Set<Community> memberOf)
+    {
         this.user = user;
         this.bookmarkedPosts = bookmarkedPosts;
         this.followingCommunities = followingCommunities;
         this.image = image;
         this.interests = interests;
+        this.memberOf = memberOf;
     }
 
     public User getUser() {
@@ -144,4 +156,21 @@ public class Student {
     public void removeTag(Tag tag) {
         interests.remove(tag);
     }
+
+    public Set<Community> getMemberOf() {
+        return memberOf;
+    }
+
+    public void setMemberOf(Set<Community> memberOf) {
+        this.memberOf = memberOf;
+    }
+
+    public void addCommunityToMemberOf(Community community) {
+        memberOf.add(community);
+    }
+
+    public void deleteCommunityFromMemberOf(Community community) {
+        memberOf.remove(community);
+    }
+
 }
