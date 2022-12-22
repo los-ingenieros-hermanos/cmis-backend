@@ -169,8 +169,9 @@ public class PostController {
 
     @PostMapping("/communities/{communityId}/posts")
     public ResponseEntity<Post> createPost(@PathVariable(value = "communityId") Long communityId,
-                                                 @RequestBody Post postRequest,
-                                                 final @RequestParam("image") MultipartFile image) {
+                                                 @RequestBody Post postRequest/*,
+                                                 final @RequestParam("image") MultipartFile image */) {
+        System.out.println("!!!");
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -179,8 +180,8 @@ public class PostController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Post post = communityRepository.findById(communityId).map(community -> {
-            postRequest.setImage(imageEncoder.encodeImage(image));
-            postRequest.setCommunity(community);
+            /*postRequest.setImage(imageEncoder.encodeImage(image));
+            */postRequest.setCommunity(community);
             return postRepository.save(postRequest);
         }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
