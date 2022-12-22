@@ -88,6 +88,8 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests().antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/test/**").permitAll()
+                .antMatchers("/api/cmis/communities").permitAll()
+                .antMatchers("/api/cmis/posts").permitAll()
                 .antMatchers("/api/cmis/**")
                 .access("hasRole('ROLE_ADMIN') or hasRole('ROLE_COMMUNITY') or hasRole('ROLE_STUDENT')")
                 .anyRequest().permitAll();
