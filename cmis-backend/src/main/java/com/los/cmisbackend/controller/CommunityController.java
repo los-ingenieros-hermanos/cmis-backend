@@ -210,13 +210,78 @@ public class CommunityController {
         return new ResponseEntity<>(community, HttpStatus.OK);
 	}
 
+    @PutMapping("/communities/{id}/updateBanner")
+	public ResponseEntity<Community> updateBanner(@PathVariable(value = "id") Long id,
+							@RequestParam("banner") MultipartFile image)
+	{
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Community community = communityRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
+
+		community.setBanner(imageEncoder.encodeImage(image));
+
+        communityRepository.save(community);
+
+        return new ResponseEntity<>(community, HttpStatus.OK);
+	}
+
     @GetMapping("/communities/{id}/image")
     public ResponseEntity<String> getCommunityImage(@PathVariable(value = "id") Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
 
         var image = community.getImage();
+        if (image == null)
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         return new ResponseEntity<>(image, HttpStatus.OK);
+    }
+
+    @GetMapping("/communities/{id}/banner")
+    public ResponseEntity<String> getCommunityBanner(@PathVariable(value = "id") Long id) {
+        Community community = communityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+
+        var image = community.getBanner();
+        if (image == null)
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(image, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/communities/{id}/image")
+    public ResponseEntity<HttpStatus> deleteCommunityImage(@PathVariable(value = "id") Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Community community = communityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+
+        community.setImage(null);
+        communityRepository.save(community);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/communities/{id}/banner")
+    public ResponseEntity<HttpStatus> deleteCommunityBanner(@PathVariable(value = "id") Long id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Community community = communityRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+
+        community.setBanner(null);
+        communityRepository.save(community);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/tags/{id}/communities")
