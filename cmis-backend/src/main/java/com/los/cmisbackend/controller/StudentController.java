@@ -226,4 +226,56 @@ public class StudentController {
         var image = student.getImage();
         return new ResponseEntity<>(image, HttpStatus.OK);
     }
+
+    @GetMapping("/communities/{communityId}/members")
+    public ResponseEntity<Set<Student>> getAllMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        Set<Student> members = community.getMembers();
+        return new ResponseEntity<>(members, HttpStatus.OK);
+    }
+    
+    @GetMapping("/communities/{communityId}/members/{memberId}")
+    public ResponseEntity<Student> getMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "memberId") Long memberId) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        Student member = community.getMembers().stream()
+                .filter(m -> m.getId().equals(memberId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Member with id = " + memberId));
+
+        return new ResponseEntity<>(member, HttpStatus.OK);
+    }
+
+    @PostMapping("/communities/{communityId}/members")
+    public ResponseEntity<Student> addMemberToCommunity(
+            @PathVariable(value = "communityId") Long communityId, @RequestBody Student memberRequest) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(communityId))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Student member = communityRepository.findById(communityId).map(community -> {
+            Long memberId = memberRequest.getId();
+
+            // member is existed
+            if (memberId != null) {
+                Student _member = studentRepository.findById(memberId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + memberId));
+                community.addMember(_member);
+                communityRepository.save(community);
+                return _member;
+        }
+        
+        throw new ResourceNotFoundException("Student does not exists.");
+        }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        return new ResponseEntity<>(member, HttpStatus.CREATED);
+    }
+
 }
