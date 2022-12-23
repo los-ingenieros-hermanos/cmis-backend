@@ -17,5 +17,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Transactional
     void deleteByCommunityId(Long id);
 
+    Optional<Post> findPostByEventId(Long eventId);
+
     List<Post> findPostByStudentsId(Long id);
 }
