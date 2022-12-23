@@ -6,7 +6,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -24,6 +26,17 @@ public class Post {
     @Column(name="text")
     private String text;
 
+    @Column(name="visibility", nullable = false)
+    private String visibility;
+
+
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinColumn(name= "event_id")
+    private List<Event> event = new ArrayList<>();
+
+    // add date to the post
+
+
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {
                     CascadeType.PERSIST,
@@ -34,10 +47,9 @@ public class Post {
     private Set<Student> students = new HashSet<>();
 
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name="community_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JsonIgnore
     private Community community;
 
     @Lob
@@ -48,9 +60,14 @@ public class Post {
 
     }
 
-    public Post(String title, String text) {
+    public Post(String title, String text, String visibility, List<Event> event, Set<Student> students, Community community, String image) {
         this.title = title;
         this.text = text;
+        this.visibility = visibility;
+        this.event = event;
+        this.students = students;
+        this.community = community;
+        this.image = image;
     }
 
     public Long getId() {
@@ -101,12 +118,41 @@ public class Post {
         students.remove(student);
     }
 
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
+    public List<Event> getEvent() {
+        return event;
+    }
+
+    public void setEvent(List<Event> event) {
+        this.event = event;
+    }
+
+    public void addEvent(Event event) {
+        this.event.add(event);
+    }
+
+    public void removeEvent(Event event) {
+        this.event.remove(event);
+    }
+
     @Override
     public String toString() {
         return "Post{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", text='" + text + '\'' +
+                ", visibility='" + visibility + '\'' +
+                ", event=" + event +
+                ", students=" + students +
+                ", community=" + community +
+                ", image='" + image + '\'' +
                 '}';
     }
 
@@ -117,4 +163,5 @@ public class Post {
     public void setImage(String image) {
         this.image = image;
     }
+
 }
