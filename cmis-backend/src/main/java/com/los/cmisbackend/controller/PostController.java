@@ -101,7 +101,7 @@ public class PostController {
         }
 
         Student student = studentRepository.findStudentById(studentId);
-        Set<Post> posts = student.getBookMarkedPosts();
+        Set<Post> posts = student.getBookmarkedPosts();
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
