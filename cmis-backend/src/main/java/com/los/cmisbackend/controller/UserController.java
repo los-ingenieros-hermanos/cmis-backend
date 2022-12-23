@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@CrossOrigin(origins = {"*", "http://localhost:3000", "http://127.0.0.1:3000"}, maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
 @RestController()
 @RequestMapping("/api/cmis")
 public class UserController {
