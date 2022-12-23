@@ -1,6 +1,10 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name="event")
@@ -18,8 +22,16 @@ public class Event {
     @JoinColumn(name= "date_id")
     private Date date;
 
-    // map student and event, one event can have many students
-    // when student is deleted, event is not deleted
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "events")
+    @JsonIgnore
+    private Set<Student> attendants = new HashSet<>();
+
 
     public Event() {
 
@@ -27,6 +39,11 @@ public class Event {
 
     public Event(Date date) {
         this.date = date;
+    }
+
+    public Event(Date date, Set<Student> attendants) {
+        this.date = date;
+        this.attendants = attendants;
     }
 
     public Long getId() {
@@ -45,6 +62,23 @@ public class Event {
         this.date = date;
     }
 
+    public Set<Student> getAttendants() {
+        return attendants;
+    }
+
+    public void setAttendants(Set<Student> attendants) {
+        this.attendants = attendants;
+    }
+
+    public void addAttendant(Student student) {
+        attendants.add(student);
+        student.getEvents().add(this);
+    }
+
+    public void removeAttendant(Student student) {
+        attendants.remove(student);
+        student.getEvents().remove(this);
+    }
 
     @Override
     public String toString() {
