@@ -61,6 +61,17 @@ public class Student {
     @JsonIgnore
     private Set<Community> memberOf = new HashSet<>();
 
+    // many to many relationship with event
+    @ManyToMany(fetch = FetchType.EAGER,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "event_student",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "event_id") })
+    private Set<Event> events = new HashSet<>();
+
     public Student () {
 
     }
@@ -91,15 +102,6 @@ public class Student {
     public void setId(Long id) {
         this.id = id;
     }
-
-    public Set<Post> getBookMarkedPosts() {
-        return bookmarkedPosts;
-    }
-
-    public void setBookMarkedPosts(Set<Post> bookMarkedPosts) {
-        this.bookmarkedPosts = bookMarkedPosts;
-    }
-
 
     public Set<Community> getFollowingCommunities() {
         return followingCommunities;
@@ -173,4 +175,19 @@ public class Student {
         memberOf.remove(community);
     }
 
+    public Set<Event> getEvents() {
+        return events;
+    }
+
+    public void setEvents(Set<Event> events) {
+        this.events = events;
+    }
+
+    public void addEvent(Event event) {
+        events.add(event);
+    }
+
+    public void removeEvent(Event event) {
+        events.remove(event);
+    }
 }
