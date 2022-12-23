@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@CrossOrigin(origins = "http://localhost:8070", maxAge = 3600)
+@CrossOrigin(origins = {"*", "http://localhost:3000", "http://127.0.0.1:3000"}, maxAge = 3600)
 @RestController
 @RequestMapping("api/cmis")
 public class StudentController {
