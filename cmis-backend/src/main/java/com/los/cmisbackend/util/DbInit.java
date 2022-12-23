@@ -3,6 +3,7 @@ package com.los.cmisbackend.util;
 import javax.annotation.PostConstruct;
 
 import com.los.cmisbackend.dao.AdminRepository;
+import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.TagRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.*;
@@ -11,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import com.los.cmisbackend.dao.RoleRepository;
+import com.los.cmisbackend.dao.StudentRepository;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -29,6 +31,12 @@ public class DbInit {
 
 	@Autowired
 	private UserRepository userRepository;
+
+	@Autowired
+	private CommunityRepository communityRepository;
+
+	@Autowired
+	private StudentRepository studentRepository;
 
 	@Autowired
 	PasswordEncoder encoder;
@@ -84,5 +92,43 @@ public class DbInit {
 			user.setRoles(roles);
 			userRepository.save(user);
 		}
+
+		//add mangalCom as community if userRepository is empty
+		// if(communityRepository.findAll().isEmpty())
+		// {
+		// 	User user = new User("mangalCom", null, "mangal@gtu.edu.tr",
+		// 	"mangal@gtu.edu.tr", encoder.encode("mangal123"));
+		// 	Set<Role> roles = new HashSet<>();
+		// 	Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
+		// 		.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+		// 	user.setRoles(roles);
+		// 	roles.add(role);
+
+
+		// 	Community community = new Community();
+		// 	community.setUser(user);
+
+		// 	communityRepository.save(community);
+		// }
+
+		// //add Ayhan as student if student repository is empty
+		// if(studentRepository.findAll().isEmpty())
+		// {
+		// 	User user = new User("Ayhan", "ayhanoglu",
+		// 		"ayhan@gtu.edu.tr", 
+		// 		"ayhan@gtu.edu.tr", 
+		// 		encoder.encode("ayhan123"));
+
+		// 	Set<Role> roles = new HashSet<>();	
+		// 	Role role = roleRepository.findByName(ERole.ROLE_STUDENT)
+		// 		.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+		// 	roles.add(role);
+		// 	user.setRoles(roles);
+
+		// 	Student student = new Student();
+		// 	student.setUser(user);
+
+		// 	studentRepository.save(student);
+		//}
 	}
 }
