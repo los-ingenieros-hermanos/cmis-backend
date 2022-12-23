@@ -1,11 +1,7 @@
 package com.los.cmisbackend.controller;
 
-import com.los.cmisbackend.dao.CommunityRepository;
-import com.los.cmisbackend.dao.PostRepository;
-import com.los.cmisbackend.dao.StudentRepository;
-import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.Post;
-import com.los.cmisbackend.entity.Student;
+import com.los.cmisbackend.dao.*;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.Base64ImageEncoder;
 
@@ -37,6 +33,12 @@ public class PostController {
     @Autowired
     CommunityRepository communityRepository;
 
+    @Autowired
+    EventRepository eventRepository;
+
+    @Autowired
+    DateRepository dateRepository;
+
     private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
 
 
@@ -44,6 +46,7 @@ public class PostController {
     public ResponseEntity<List<Post>> getAllPosts() {
         List<Post> posts = new ArrayList<Post>();
 
+        System.out.println("Get all posts");
         postRepository.findAll().forEach(posts::add);
 
         if (posts.isEmpty()) {
@@ -171,7 +174,7 @@ public class PostController {
     public ResponseEntity<Post> createPost(@PathVariable(value = "communityId") Long communityId,
                                                  @RequestBody Post postRequest/*,
                                                  final @RequestParam("image") MultipartFile image */) {
-        System.out.println("!!!");
+        System.out.println(postRequest);
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -181,7 +184,32 @@ public class PostController {
 
         Post post = communityRepository.findById(communityId).map(community -> {
             /*postRequest.setImage(imageEncoder.encodeImage(image));
-            */postRequest.setCommunity(community);
+            */
+            postRequest.setCommunity(community);
+
+            if (postRequest.getEvent() != null && !postRequest.getEvent().isEmpty()) {
+                List<Event> events = postRequest.getEvent();
+                Event event = events.get(0);
+
+                // if date is null throw exception
+                if (event.getDate() == null) {
+                    throw new ResourceNotFoundException("Date is null");
+                }
+
+                Date date = new Date();
+                date.setDay(event.getDate().getDay());
+                date.setMonth(event.getDate().getMonth());
+                date.setYear(event.getDate().getYear());
+                date = dateRepository.save(date);
+                event.setDate(date);
+
+                System.out.println(event);
+                System.out.println(date);
+                events.set(0, eventRepository.save(event));
+                postRequest.setEvent(events);
+                System.out.println(postRequest);
+            }
+            System.out.println(postRequest);
             return postRepository.save(postRequest);
         }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
