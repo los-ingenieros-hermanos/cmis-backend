@@ -82,6 +82,7 @@ public class AuthController {
                         roles));
     }
 
+    @SuppressWarnings("unused")
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 

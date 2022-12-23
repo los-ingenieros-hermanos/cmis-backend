@@ -1,9 +1,7 @@
 package com.los.cmisbackend.dao;
 
 import com.los.cmisbackend.entity.Post;
-import com.los.cmisbackend.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

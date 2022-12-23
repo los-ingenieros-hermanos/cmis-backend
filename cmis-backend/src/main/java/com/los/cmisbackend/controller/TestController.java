@@ -1,6 +1,5 @@
 package com.los.cmisbackend.controller;
 
-import com.los.cmisbackend.dao.StudentRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

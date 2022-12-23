@@ -4,7 +4,6 @@ import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.TagRepository;
 import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.Tag;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
@@ -16,7 +15,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +65,7 @@ public class TagController {
         if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        Tag tag = tagRepository.findById(id)
+        tagRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Tag with id = " + id));
 
         tagRepository.deleteById(id);

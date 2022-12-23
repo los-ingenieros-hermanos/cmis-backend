@@ -105,6 +105,7 @@ public class EventController {
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
+    @SuppressWarnings("unused")
     @GetMapping("/events/{id}/eventDetails")
     public ResponseEntity<Post> getEventDetailByEventId(@PathVariable(value = "id") Long id) {
         Event event = eventRepository.findById(id)

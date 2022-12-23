@@ -5,25 +5,18 @@ import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.TagRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.ERole;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
-import com.los.cmisbackend.payload.response.MessageResponse;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
-import com.los.cmisbackend.util.Base64ImageEncoder;
 
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +38,6 @@ public class CommunityController {
 
     @Autowired
     TagRepository tagRepository;
-
-    private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
 
     @GetMapping({ "/communities/{id}", "/users/{id}/communities" })
     public ResponseEntity<Community> getCommunityById(@PathVariable(value = "id") Long id) {
@@ -192,7 +183,7 @@ public class CommunityController {
 
     @PutMapping("/communities/{id}/updateImage")
 	public ResponseEntity<Community> updateImage(@PathVariable(value = "id") Long id,
-							@RequestParam("image") MultipartFile image)
+							@RequestParam("image") String image)
 	{
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -203,8 +194,7 @@ public class CommunityController {
         Community community = communityRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
-		community.setImage(imageEncoder.encodeImage(image));
-
+		community.setImage(image);
         communityRepository.save(community);
 
         return new ResponseEntity<>(community, HttpStatus.OK);
@@ -212,7 +202,7 @@ public class CommunityController {
 
     @PutMapping("/communities/{id}/updateBanner")
 	public ResponseEntity<Community> updateBanner(@PathVariable(value = "id") Long id,
-							@RequestParam("banner") MultipartFile image)
+							@RequestParam("banner") String image)
 	{
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -223,8 +213,7 @@ public class CommunityController {
         Community community = communityRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
-		community.setBanner(imageEncoder.encodeImage(image));
-
+		community.setBanner(image);
         communityRepository.save(community);
 
         return new ResponseEntity<>(community, HttpStatus.OK);

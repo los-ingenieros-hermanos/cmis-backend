@@ -3,7 +3,6 @@ package com.los.cmisbackend.controller;
 import com.los.cmisbackend.dao.*;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
-import com.los.cmisbackend.util.Base64ImageEncoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -13,7 +12,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,9 +36,6 @@ public class PostController {
 
     @Autowired
     DateRepository dateRepository;
-
-    private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
-
 
     @GetMapping("/posts")
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -172,8 +167,7 @@ public class PostController {
 
     @PostMapping("/communities/{communityId}/posts")
     public ResponseEntity<Post> createPost(@PathVariable(value = "communityId") Long communityId,
-                                                 @RequestBody Post postRequest/*,
-                                                 final @RequestParam("image") MultipartFile image */) {
+                                                 @RequestBody Post postRequest) {
         System.out.println(postRequest);
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -183,10 +177,7 @@ public class PostController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Post post = communityRepository.findById(communityId).map(community -> {
-            /*postRequest.setImage(imageEncoder.encodeImage(image));
-            */
             postRequest.setCommunity(community);
-
             if (postRequest.getEvent() != null && !postRequest.getEvent().isEmpty()) {
                 List<Event> events = postRequest.getEvent();
                 Event event = events.get(0);
