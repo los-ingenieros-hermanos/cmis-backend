@@ -137,6 +137,12 @@ public class MemberController {
 											@PathVariable(value = "studentId") Long studentId, 
 											@RequestBody String message)
 	{
+
+		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		if (memberApplication != null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
 		Community community = communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
@@ -144,7 +150,7 @@ public class MemberController {
 				.orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
 
 		// create member application and add to community member applicant list
-		MemberApplication memberApplication = new MemberApplication(memberApplicant, community, message);
+		memberApplication = new MemberApplication(memberApplicant, community, message);
 		community.addMemberApplication(memberApplication);
 		communityRepository.save(community);
 		return new ResponseEntity<>(memberApplication, HttpStatus.CREATED);
