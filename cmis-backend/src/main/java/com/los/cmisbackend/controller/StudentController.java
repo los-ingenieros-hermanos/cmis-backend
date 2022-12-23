@@ -1,12 +1,10 @@
 package com.los.cmisbackend.controller;
 
 import com.los.cmisbackend.dao.CommunityRepository;
+import com.los.cmisbackend.dao.EventRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
-import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.Post;
-import com.los.cmisbackend.entity.Student;
-import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -37,6 +35,9 @@ public class StudentController {
 
     @Autowired
     CommunityRepository communityRepository;
+
+    @Autowired
+    EventRepository eventRepository;
 
     private Base64ImageEncoder imageEncoder = new Base64ImageEncoder();
 
@@ -278,4 +279,12 @@ public class StudentController {
         return new ResponseEntity<>(member, HttpStatus.CREATED);
     }
 
+    @GetMapping("/events/{eventId}/attendants")
+    public ResponseEntity<Set<Student>> getAllAttendantsByEventId(@PathVariable(value = "eventId") Long eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
+
+        Set<Student> attendants = event.getAttendants();
+        return new ResponseEntity<>(attendants, HttpStatus.OK);
+    }
 }
