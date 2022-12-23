@@ -1,14 +1,8 @@
 package com.los.cmisbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.los.cmisbackend.util.BCryptPasswordDeserializer;
-
 import javax.persistence.*;
-import javax.validation.constraints.Size;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -59,7 +53,7 @@ public class Student {
             },
             mappedBy = "members")
     @JsonIgnore
-    private Set<Community> memberOf = new HashSet<>();
+    private Set<Community> memberOf = new HashSet<>();    
 
     // many to many relationship with event
     @ManyToMany(fetch = FetchType.EAGER,
@@ -71,6 +65,15 @@ public class Student {
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "event_id") })
     private Set<Event> events = new HashSet<>();
+
+    //one to many relationship with member application
+    @OneToMany(
+		cascade = {CascadeType.REMOVE
+				,CascadeType.MERGE
+				,CascadeType.REFRESH})
+	@JoinColumn(name = "student_id")
+	@JsonIgnore
+    private Set<MemberApplication> memberApplications = new HashSet<>();
 
     public Student () {
 
@@ -190,4 +193,21 @@ public class Student {
     public void removeEvent(Event event) {
         events.remove(event);
     }
+
+    public Set<MemberApplication> getMemberApplications() {
+        return memberApplications;
+    }
+
+    public void setMemberApplications(Set<MemberApplication> memberApplications) {
+        this.memberApplications = memberApplications;
+    }
+
+    public void addMemberApplication(MemberApplication memberApplication) {
+        memberApplications.add(memberApplication);
+    }
+
+    public void removeMemberApplication(MemberApplication memberApplication) {
+        memberApplications.remove(memberApplication);
+    }
+
 }

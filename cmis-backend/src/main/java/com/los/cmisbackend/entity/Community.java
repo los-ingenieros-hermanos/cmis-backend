@@ -71,6 +71,14 @@ public class Community {
 	@JsonIgnore
 	private Set<Student> members = new HashSet<>();
 
+	@OneToMany(
+		cascade = {CascadeType.REMOVE
+				,CascadeType.MERGE
+				,CascadeType.REFRESH})
+	@JoinColumn(name = "community_id")
+	@JsonIgnore
+	private Set<MemberApplication> memberApplications = new HashSet<>();
+
 	public Community() {
 	}
 
@@ -173,5 +181,21 @@ public class Community {
 
 	public void setBanner(String banner) {
 		this.banner = banner;
+	}
+
+	public Set<MemberApplication> getMemberApplications() {
+		return memberApplications;
+	}
+
+	public void setMemberApplications(Set<MemberApplication> memberApplications) {
+		this.memberApplications = memberApplications;
+	}
+
+	public void addMemberApplication(MemberApplication memberApplication) {
+		memberApplications.add(memberApplication);
+	}
+
+	public void removeMemberApplication(MemberApplication memberApplication) {
+		memberApplications.remove(memberApplication);
 	}
 }
