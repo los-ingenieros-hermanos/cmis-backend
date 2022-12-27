@@ -231,4 +231,13 @@ public class StudentController {
         Set<Student> attendants = event.getAttendants();
         return new ResponseEntity<>(attendants, HttpStatus.OK);
     }
+
+    @GetMapping("/students/{studentId}/memberOf")
+    public ResponseEntity<Set<Community>> getAllCommunitiesOfStudent(@PathVariable (value = "studentId") Long studentId){
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        Set<Community> communities = student.getMemberOf();
+        return new ResponseEntity<>(communities, HttpStatus.OK);
+    }
 }
