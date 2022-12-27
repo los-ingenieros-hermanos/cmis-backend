@@ -8,6 +8,7 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -38,6 +39,9 @@ public class CommunityController {
 
     @Autowired
     TagRepository tagRepository;
+
+    @Autowired
+    MemberUtil memberUtil;
 
     @GetMapping({ "/communities/{id}", "/users/{id}/communities" })
     public ResponseEntity<Community> getCommunityById(@PathVariable(value = "id") Long id) {
@@ -76,15 +80,18 @@ public class CommunityController {
     public ResponseEntity<Community> updateCommunity(@PathVariable("id") Long id,
                                                  @RequestBody Community communitiesRequest) {
 
-        // check authentication
+         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if ( !userDetails.getId().equals(id))
+
+        // check if user is an admin or a member of the community
+
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        // check existence
         Community community = communityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
         if(communitiesRequest.getInfo() != null)
             community.setInfo(communitiesRequest.getInfo());
@@ -101,9 +108,13 @@ public class CommunityController {
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+                
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(id))))
+                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        communityRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
         communityRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -138,6 +149,7 @@ public class CommunityController {
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        
         if ( !userDetails.getId().equals(followerId))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
@@ -183,14 +195,17 @@ public class CommunityController {
 
     @PutMapping("/communities/{id}/updateImage")
 	public ResponseEntity<Community> updateImage(@PathVariable(value = "id") Long id,
-							@RequestParam("image") String image)
+							@RequestBody String image)
 	{
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if (!userDetails.getId().equals(id))
+
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
+            
         Community community = communityRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
@@ -202,12 +217,14 @@ public class CommunityController {
 
     @PutMapping("/communities/{id}/updateBanner")
 	public ResponseEntity<Community> updateBanner(@PathVariable(value = "id") Long id,
-							@RequestParam("banner") String image)
+							@RequestBody String image)
 	{
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if (!userDetails.getId().equals(id))
+
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(id)
@@ -242,35 +259,40 @@ public class CommunityController {
     }
 
     @DeleteMapping("/communities/{id}/image")
-    public ResponseEntity<HttpStatus> deleteCommunityImage(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<Community> deleteCommunityImage(@PathVariable(value = "id") Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if (!userDetails.getId().equals(id))
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+                
         Community community = communityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
         community.setImage(null);
         communityRepository.save(community);
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(community, HttpStatus.OK);
     }
 
     @DeleteMapping("/communities/{id}/banner")
-    public ResponseEntity<HttpStatus> deleteCommunityBanner(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<Community> deleteCommunityBanner(@PathVariable(value = "id") Long id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if (!userDetails.getId().equals(id))
+        
+
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
+            .orElseThrow(() -> new ResourceNotFoundException("Id " + id + " not found"));
 
         community.setBanner(null);
         communityRepository.save(community);
 
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(community, HttpStatus.OK);
     }
 
     @GetMapping("/tags/{id}/communities")

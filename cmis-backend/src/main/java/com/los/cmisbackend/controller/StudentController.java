@@ -6,6 +6,8 @@ import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.MemberUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,9 @@ public class StudentController {
 
     @Autowired
     EventRepository eventRepository;
+
+    @Autowired
+    MemberUtil memberUtil;
 
     @GetMapping({ "/students/{id}", "/users/{id}/students" })
     public ResponseEntity<Student> getStudentById(@PathVariable(value = "id") Long id) {
@@ -180,7 +185,7 @@ public class StudentController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
                 | (userDetails.getId().equals(followerId))
-                | (userDetails.getId().equals(communityId))))
+                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(communityId)
@@ -240,4 +245,41 @@ public class StudentController {
         Set<Community> communities = student.getMemberOf();
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }
+
+    @GetMapping("/students/{studentId}/isMemberOf/{communityId}")
+    public ResponseEntity<Boolean> isMemberOf(@PathVariable (value = "studentId") Long studentId, 
+                                        @PathVariable (value = "communityId") Long communityId)
+    {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        //search memberOf set of student for community with id = communityId
+        for (Community c : student.getMemberOf())
+            if (c.getId().equals(communityId))
+                return new ResponseEntity<>(true, HttpStatus.OK);
+
+        return new ResponseEntity<>(false, HttpStatus.OK);
+    }
+
+    @GetMapping("/students/{studentId}/isFollowerOf/{communityId}")
+    public ResponseEntity<Boolean> isFollowerOf(@PathVariable (value = "studentId") Long studentId, 
+                                        @PathVariable (value = "communityId") Long communityId)
+    {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));  
+            
+        communityRepository.findById(communityId)   
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        //search followers set of community for student with id = studentId
+        for (Community c: student.getFollowingCommunities())
+            if (c.getId().equals(communityId))
+                return new ResponseEntity<>(true, HttpStatus.OK);
+
+        return new ResponseEntity<>(false, HttpStatus.OK);
+    }
+
 }

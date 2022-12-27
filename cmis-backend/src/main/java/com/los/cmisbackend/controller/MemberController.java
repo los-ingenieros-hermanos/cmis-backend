@@ -16,6 +16,7 @@ import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.MemberApplication;
 import com.los.cmisbackend.entity.Student;
+import com.los.cmisbackend.util.MemberUtil;
 
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
 //@CrossOrigin(origins = "*", maxAge = 3600)
@@ -37,6 +38,9 @@ public class MemberController {
 
 	@Autowired
 	MemberApplicationRepository memberApplicationRepository;
+
+	@Autowired
+	MemberUtil memberUtil;
 
 	
 	@GetMapping("/communities/{communityId}/members")
@@ -61,7 +65,25 @@ public class MemberController {
         return new ResponseEntity<>(member, HttpStatus.OK);
     }
 
-	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")	
+	@DeleteMapping("/communities/{communityId}/members/{memberId}")
+	public ResponseEntity<HttpStatus> deleteMember(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "memberId") Long memberId) {
+		Community community = communityRepository.findById(communityId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+		Student member = community.getMembers().stream()
+				.filter(m -> m.getId().equals(memberId))
+				.findFirst()
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Member with id = " + memberId));
+
+		community.getMembers().remove(member);
+		communityRepository.save(community);
+
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+
+
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")	
 	@GetMapping("/communities/{communityId}/memberApplications")
 	public ResponseEntity<Set<MemberApplication>> getAllMemberApplicantsByCommunityId(@PathVariable(value = "communityId") Long communityId) {
 		//if there is no community for this id return error
@@ -77,7 +99,7 @@ public class MemberController {
 		return new ResponseEntity<>(memberApplications, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id or #studentId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")
 	@GetMapping("/communities/{communityId}/memberApplications/{studentId}")
 	public ResponseEntity<MemberApplication> getMemberApplication(@PathVariable(value = "communityId") Long communityId ,
 														@PathVariable(value = "studentId") Long studentId)
@@ -94,7 +116,7 @@ public class MemberController {
 		return new ResponseEntity<>(memberApplication, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")
 	@PutMapping("/communities/{communityId}/memberApplications/{applicantId}/reject")
 	public ResponseEntity<Student> rejectMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
 														@PathVariable(value = "applicantId") Long applicantId)
@@ -111,7 +133,7 @@ public class MemberController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")
 	@PutMapping("/communities/{communityId}/memberApplications/{applicantId}/accept")
 	public ResponseEntity<Student> acceptMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
 													@PathVariable(value = "applicantId") Long applicantId)

@@ -3,6 +3,7 @@ package com.los.cmisbackend.controller;
 import com.los.cmisbackend.dao.*;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -36,6 +37,9 @@ public class PostController {
 
     @Autowired
     DateRepository dateRepository;
+
+    @Autowired
+    MemberUtil memberUtil;
 
     @GetMapping("/posts")
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -154,7 +158,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(communityId))))
+                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         if (!communityRepository.existsById(communityId)) {
@@ -173,7 +177,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(communityId))))
+                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Post post = communityRepository.findById(communityId).map(community -> {
@@ -213,7 +217,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(communityId))))
+                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         if (!communityRepository.existsById(communityId)) {
