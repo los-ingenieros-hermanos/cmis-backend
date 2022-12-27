@@ -17,7 +17,8 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.MemberApplication;
 import com.los.cmisbackend.entity.Student;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
+//@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("api/cmis")
 public class MemberController {
@@ -76,15 +77,15 @@ public class MemberController {
 		return new ResponseEntity<>(memberApplications, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or #communityId == authentication.principal.id or #studentId == authentication.principal.id")
 	@GetMapping("/communities/{communityId}/memberApplications/{studentId}")
 	public ResponseEntity<MemberApplication> getMemberApplication(@PathVariable(value = "communityId") Long communityId ,
-														@PathVariable(value = "studentId") Long applicantId)
+														@PathVariable(value = "studentId") Long studentId)
 	{
 		communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, applicantId);
+		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
