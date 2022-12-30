@@ -129,4 +129,30 @@ public class AdminController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/admin/createCommunity")
+    public ResponseEntity<User> createCommunity(@RequestBody User user) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        if (userRepository.existsByUsername(user.getUsername())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        if (userRepository.existsByEmail(user.getEmail())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Set<Role> roles = new HashSet<>();
+        Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+        roles.add(role);
+        user.setRoles(roles);
+        userRepository.save(user);
+
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
 }

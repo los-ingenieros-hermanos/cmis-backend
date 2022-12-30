@@ -7,9 +7,13 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.Tag;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -40,16 +44,16 @@ public class TagController {
     MemberUtil memberUtil;
 
     @GetMapping("/tags")
-    public ResponseEntity<List<Tag>> getAllTags() {
-        List<Tag> tags = new ArrayList<Tag>();
+    public ResponseEntity<List<Tag>> getAllTags(
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
 
-        tagRepository.findAll().forEach(tags::add);
-
-        if (tags.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Tag> tagPage = tagRepository.findAll(pageable);
+        List<Tag> tags = tagPage.getNumberOfElements() == 0 ? Collections.emptyList() : tagPage.getContent();
         return new ResponseEntity<>(tags, HttpStatus.OK);
+ 
     }
 
     @GetMapping("/tags/{id}")

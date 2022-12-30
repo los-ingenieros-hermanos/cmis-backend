@@ -8,9 +8,13 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.entity.User;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +23,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,14 +56,17 @@ public class CommunityController {
     }
 
     @GetMapping("/communities")
-    public ResponseEntity<List<Community>> getAllCommunities() {
-        List<Community> communities = new ArrayList<Community>();
+    public ResponseEntity<List<Community>> getAllCommunities(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+			@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
 
-        communityRepository.findAll().forEach(communities::add);
+        Pageable pageable = PageRequest.of(page, size);
 
-        if (communities.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+        Page<Community> communitiesPage = communityRepository.findAll(pageable);
+
+        List<Community> communities = communitiesPage.getNumberOfElements() == 0 ? Collections.emptyList()
+                : communitiesPage.getContent();
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }
@@ -135,13 +142,21 @@ public class CommunityController {
     }
 
     @GetMapping("/students/{followerId}/followingCommunities")
-    public ResponseEntity<Set<Community>> getAllFollowedCommunities(@PathVariable(value = "followerId") Long followerId) {
+    public ResponseEntity<Set<Community>> getAllFollowedCommunities(@PathVariable(value = "followerId") Long followerId,
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+    {
 
-        Student follower = studentRepository.findById(followerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
-        Set<Community> communities = follower.getFollowingCommunities();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Community> communitiesPage = communityRepository.findCommunitiesByFollowersId(followerId, pageable);
+
+        Set<Community> communities = communitiesPage.getNumberOfElements() == 0 ? Collections.emptySet()
+                : communitiesPage.toSet();
+
         return new ResponseEntity<>(communities, HttpStatus.OK);
-    }
+    } 
+    
 
     @PostMapping("/students/{followerId}/followingCommunities")
     public ResponseEntity<Community> addCommunityToStudentsFollowers(@PathVariable(value = "followerId") Long followerId,
@@ -296,8 +311,17 @@ public class CommunityController {
     }
 
     @GetMapping("/tags/{id}/communities")
-    public ResponseEntity<List<Community>> getCommunitiesByTagId(@PathVariable(value = "id") Long id) {
-        List<Community> communities = communityRepository.findCommunitiesByTagsId(id);
+    public ResponseEntity<List<Community>> getCommunitiesByTagId(@PathVariable(value = "id") Long id, 
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Community> communitiesPage = communityRepository.findCommunitiesByTagsId(id, pageable);
+
+        List<Community> communities = communitiesPage.getNumberOfElements() == 0 ? Collections.emptyList() 
+            : communitiesPage.getContent();
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }

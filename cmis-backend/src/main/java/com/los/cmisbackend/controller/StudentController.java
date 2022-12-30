@@ -7,9 +7,13 @@ import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -55,16 +58,20 @@ public class StudentController {
     }
 
     @GetMapping("/students")
-    public ResponseEntity<List<Student>> getAllStudents() {
-        List<Student> students = new ArrayList<Student>();
+    public ResponseEntity<List<Student>> getAllStudents(
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+        {
 
-        studentRepository.findAll().forEach(students::add);
+        Pageable pageable = PageRequest.of(page, size);
 
-        if (students.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+		Page<Student> studentPage = studentRepository.findAll(pageable);
 
+        List<Student> students = studentPage.getNumberOfElements() == 0 ? Collections.emptyList() : studentPage.getContent();
+
+       
         return new ResponseEntity<>(students, HttpStatus.OK);
+
     }
 
     @PostMapping("/users/{userId}/students")
@@ -144,11 +151,19 @@ public class StudentController {
     }
 
     @GetMapping("/communities/{communityId}/followers")
-    public ResponseEntity<Set<Student>> getAllFollowersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
-        Community community = communityRepository.findById(communityId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+    public ResponseEntity<Set<Student>> getAllFollowersByCommunityId(@PathVariable(value = "communityId") Long communityId,
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+    {
 
-        Set<Student> students = community.getFollowers();
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + communityId));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Student> studentPage = studentRepository.findByFollowingCommunitiesContaining(community, pageable);
+
+        Set<Student> students = studentPage.getNumberOfElements() == 0 ? Collections.emptySet() : studentPage.toSet();
+        
         return new ResponseEntity<>(students, HttpStatus.OK);
     }
 
@@ -242,9 +257,14 @@ public class StudentController {
     }
 
     @GetMapping("/students/{studentId}/memberOf")
-    public ResponseEntity<Set<Community>> getAllCommunitiesOfStudent(@PathVariable (value = "studentId") Long studentId){
+    public ResponseEntity<Set<Community>> getAllCommunitiesOfStudent(@PathVariable (value = "studentId") Long studentId,
+        @RequestParam (value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam (value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable paging = PageRequest.of(page, size);
 
-        Set<Community> communities = communityRepository.findCommunitiesByMembersId(studentId);
+        Page<Community> communityPage = communityRepository.findCommunitiesByMembersId(studentId, paging);
+        Set<Community> communities = communityPage.getNumberOfElements() == 0 ? Collections.emptySet() : communityPage.toSet();
 
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }

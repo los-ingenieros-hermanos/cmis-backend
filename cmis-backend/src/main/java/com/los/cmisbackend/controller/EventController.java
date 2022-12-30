@@ -8,7 +8,12 @@ import com.los.cmisbackend.entity.Event;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.Set;
 
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
@@ -34,11 +40,20 @@ public class EventController {
     private PostRepository postRepository;
 
     @GetMapping("/students/{id}/events")
-    public ResponseEntity<Set<Event>> getAllEventsByStudentId(@PathVariable(value = "id") Long id) {
-        Student student = studentRepository.findById(id)
+    public ResponseEntity<Set<Event>> getAllEventsByStudentId(@PathVariable(value = "id") Long id,
+    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+
+        studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
 
-        Set<Event> events = student.getEvents();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Event> eventsPage = eventRepository.findEventsById(id, pageable);
+        Set<Event> events = eventsPage.getNumberOfElements() == 0 ? Collections.emptySet() 
+            : eventsPage.toSet();
+            
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 

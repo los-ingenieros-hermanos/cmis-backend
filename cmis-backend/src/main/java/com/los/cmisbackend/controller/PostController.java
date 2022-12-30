@@ -3,9 +3,13 @@ package com.los.cmisbackend.controller;
 import com.los.cmisbackend.dao.*;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,9 +18,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -42,17 +45,19 @@ public class PostController {
     MemberUtil memberUtil;
 
     @GetMapping("/posts")
-    public ResponseEntity<List<Post>> getAllPosts() {
-        List<Post> posts = new ArrayList<Post>();
+    public ResponseEntity<List<Post>> getAllPosts(
+        @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+        @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+        {
 
-        System.out.println("Get all posts");
-        postRepository.findAll().forEach(posts::add);
+        Pageable pageable = PageRequest.of(page, size);
 
-        if (posts.isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
+		Page<Post> posts = postRepository.findAll(pageable);
 
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+       
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
     @GetMapping("/posts/{id}")
@@ -86,7 +91,9 @@ public class PostController {
     }
 
     @GetMapping("/students/{studentId}/bookmarkedPosts")
-    public ResponseEntity<Set<Post>> getAllPostsByStudentId(@PathVariable(value = "studentId") Long studentId) {
+    public ResponseEntity<List<Post>> getAllPostsByStudentId(@PathVariable(value = "studentId") Long studentId,
+    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) {
 
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -99,9 +106,16 @@ public class PostController {
             throw new ResourceNotFoundException("Not found Student with id = " + studentId);
         }
 
-        Student student = studentRepository.findStudentById(studentId);
-        Set<Post> posts = student.getBookmarkedPosts();
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findByStudents(student, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
     @PostMapping("/students/{studentId}/bookmarkedPosts")
@@ -151,22 +165,28 @@ public class PostController {
     }
 
     @GetMapping("/communities/{communityId}/posts")
-    public ResponseEntity<List<Post>> getAllPostsByCommunityId(@PathVariable(value = "communityId") Long communityId) {
-
+    public ResponseEntity<List<Post>> getAllPostsByCommunityId(@PathVariable(value = "communityId") Long communityId,
+    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+    {
         // add authentication check for community members
         // check authentication
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isAuthorized(communityId, userDetails.getId())))
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        // Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        // if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        //         | memberUtil.isAuthorized(communityId, userDetails.getId())))
+        //     return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        if (!communityRepository.existsById(communityId)) {
-            throw new ResourceNotFoundException("Not found Community with id = " + communityId);
-        }
+        communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-        List<Post> posts = postRepository.findByCommunityId(communityId);
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findByCommunityId(communityId, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
     @PostMapping("/communities/{communityId}/posts")

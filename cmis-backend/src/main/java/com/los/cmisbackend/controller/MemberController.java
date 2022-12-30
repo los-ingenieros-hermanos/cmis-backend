@@ -1,9 +1,13 @@
 package com.los.cmisbackend.controller;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,7 @@ import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Member;
 import com.los.cmisbackend.entity.MemberApplication;
 import com.los.cmisbackend.entity.Student;
+import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
@@ -50,13 +55,19 @@ public class MemberController {
 
 	
 	@GetMapping("/communities/{communityId}/members")
-    public ResponseEntity<Set<Member>> getAllMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+    public ResponseEntity<Set<Member>> getAllMembersByCommunityId(@PathVariable(value = "communityId") Long communityId, 
+		@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+		@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+{
 
-		Set<Member> members = community.getMembers();
+	Pageable pageable = PageRequest.of(page, size);
 
-        return new ResponseEntity<>(members, HttpStatus.OK);
+	Page<Member> memberPage = memberRepository.findByCommunityId(communityId, pageable);
+
+	Set<Member> members = memberPage.getNumberOfElements() == 0 ? Collections.emptySet()
+			: memberPage.toSet();
+
+	return new ResponseEntity<>(members, HttpStatus.OK);
     }
     
     @GetMapping("/communities/{communityId}/members/{studentId}")
@@ -122,18 +133,22 @@ public class MemberController {
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")	
 	@GetMapping("/communities/{communityId}/memberApplications")
-	public ResponseEntity<Set<MemberApplication>> getAllMemberApplicantsByCommunityId(@PathVariable(value = "communityId") Long communityId) {
+	public ResponseEntity<Set<MemberApplication>> getAllMemberApplicantsByCommunityId(@PathVariable(value = "communityId") Long communityId,
+		@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+		@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
+	{
 
-		communityRepository.findById(communityId
-				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-		
-		Set<MemberApplication> memberApplications = memberApplicationRepository.findByCommunityId(communityId);
+		Pageable pageable = PageRequest.of(page, size);
 
-		if (memberApplications.isEmpty()) {
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-		}
+		Page<MemberApplication> memberApplicationPage = memberApplicationRepository.findByCommunityId(communityId, pageable);
+
+		Set<MemberApplication> memberApplications = memberApplicationPage.getNumberOfElements() == 0 ? Collections.emptySet()
+				: memberApplicationPage.toSet();
 
 		return new ResponseEntity<>(memberApplications, HttpStatus.OK);
+	}
+	{
+
 	}
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")
@@ -187,6 +202,11 @@ public class MemberController {
 
 		Community community = communityRepository.findById(communityId
 				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+		if (authorizations == null) {
+			authorizations = new HashSet<>();
+			authorizations.add("NONE");
+		}
 
 		Member member = new Member(student, community, authorizations);
 		memberRepository.save(member);
