@@ -94,23 +94,23 @@ public class DbInit {
 		}
 
 		//add mangalCom as community if userRepository is empty
-		if(!(communityRepository.findById((long) 20).isPresent()))
-		{
-			for(int i = 0; i < 25; i++){
-				User user = new User("mangalCom", null, "mangal" + i + "@gtu.edu.tr",
-				"mangal" + i + "@gtu.edu.tr", encoder.encode("mangal123"));
-				Set<Role> roles = new HashSet<>();
-				Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				user.setRoles(roles);
-				roles.add(role);
-				Community community = new Community();
-				community.setUser(user);
+		// if(!(communityRepository.findById((long) 20).isPresent()))
+		// {
+		// 	for(int i = 0; i < 25; i++){
+		// 		User user = new User("mangalCom", null, "mangal" + i + "@gtu.edu.tr",
+		// 		"mangal" + i + "@gtu.edu.tr", encoder.encode("mangal123"));
+		// 		Set<Role> roles = new HashSet<>();
+		// 		Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
+		// 			.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+		// 		user.setRoles(roles);
+		// 		roles.add(role);
+		// 		Community community = new Community();
+		// 		community.setUser(user);
 	
-				communityRepository.save(community);
-			}
+		// 		communityRepository.save(community);
+		// 	}
 
-		}
+		// }
 
 		// //add Ayhan as student if student repository is empty
 		// if(studentRepository.findAll().isEmpty())
