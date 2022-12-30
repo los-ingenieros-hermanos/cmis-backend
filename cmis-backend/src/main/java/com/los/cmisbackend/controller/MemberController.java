@@ -174,7 +174,7 @@ public class MemberController {
 	@PutMapping("/communities/{communityId}/memberApplications/{studentId}/accept")
 	public ResponseEntity<Student> acceptMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
 													@PathVariable(value = "studentId") Long studentId,
-													@RequestBody Set<String> authorizations)
+													@RequestBody(required = false) Set<String> authorizations)
 	{	
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
