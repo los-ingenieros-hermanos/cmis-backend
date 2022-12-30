@@ -87,7 +87,7 @@ public class CommunityController {
         // check if user is an admin or a member of the community
 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+                | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(id)
@@ -110,7 +110,7 @@ public class CommunityController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
                 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+                | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         communityRepository.findById(id)
@@ -202,7 +202,7 @@ public class CommunityController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+                | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
             
@@ -224,7 +224,7 @@ public class CommunityController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+            | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(id)
@@ -264,7 +264,7 @@ public class CommunityController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+            | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
                 
         Community community = communityRepository.findById(id)
@@ -283,7 +283,7 @@ public class CommunityController {
         
 
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            | (memberUtil.isUserMemberOrCommunity(id, userDetails.getId()))))
+            | (memberUtil.isAuthorized(id, userDetails.getId()))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(id)

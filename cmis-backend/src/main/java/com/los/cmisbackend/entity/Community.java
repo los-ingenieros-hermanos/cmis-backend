@@ -7,18 +7,6 @@ import java.util.Set;
 
 import javax.persistence.*;
 
-/*
-+----------+--------------+------+-----+-----------+-------------------+
-| Field    	| Type        	| Null 	| Default  	| Extra             |
-+----------+--------------+------+-----+-----------+-------------------+
-| id       	| varchar(11) 	| NO  	|      		|  AUTO_INCREMENT   |
-| name     	| varchar(45) 	| NO  	| 	NULL   	|                   |
-| email    	| varchar(45) 	| NO  	|  	NULL  	|                   |
-| info 		| varchar(120)	| YES 	|	NULL	|					|
-| password 	| varchar(60) 	| NO 	|	NULL 	|                   |
-+----------+--------------+------+-----+-----------+-------------------+
-*/
-
 @Entity
 @Table(name="community")
 public class Community {
@@ -60,17 +48,6 @@ public class Community {
 			inverseJoinColumns = @JoinColumn(name = "tag_id"))
 	private Set<Tag> tags = new HashSet<>();
 
-	@ManyToMany(fetch = FetchType.LAZY,
-			cascade = {
-					CascadeType.PERSIST,
-					CascadeType.MERGE
-			})
-	@JoinTable(name = "community_member",
-			joinColumns = { @JoinColumn(name = "community_id") },
-			inverseJoinColumns = { @JoinColumn(name = "student_id") })
-	@JsonIgnore
-	private Set<Student> members = new HashSet<>();
-
 	@OneToMany(
 		cascade = {CascadeType.REMOVE
 				,CascadeType.MERGE
@@ -79,16 +56,24 @@ public class Community {
 	@JsonIgnore
 	private Set<MemberApplication> memberApplications = new HashSet<>();
 
+	@OneToMany(
+		cascade = CascadeType.ALL)
+	@JoinColumn(name = "community_id")
+	@JsonIgnore
+	private Set<Member> members = new HashSet<>();
+
 	public Community() {
 	}
 
-	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags, Set<Student> members) {
+	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags, 
+				String banner) 
+	{
 		this.user = user;
 		this.info = info;
 		this.followers = followers;
 		this.image = image;
 		this.tags = tags;
-		this.members = members;
+		this.banner = banner;
 	}
 
 	public Community(String info) {
@@ -159,19 +144,19 @@ public class Community {
 		tags.remove(tag);
 	}
 
-	public Set<Student> getMembers() {
+	public Set<Member> getMembers() {
 		return members;
 	}
 
-	public void setMembers(Set<Student> members) {
+	public void setMembers(Set<Member> members) {
 		this.members = members;
 	}
 
-	public void addMember(Student member) {
+	public void addMember(Member member) {
 		members.add(member);
 	}
 
-	public void removeMember(Student member) {
+	public void removeMember(Member member) {
 		members.remove(member);
 	}
 

@@ -2,6 +2,7 @@ package com.los.cmisbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,15 +47,6 @@ public class Student {
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private Set<Tag> interests = new HashSet<>();
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.PERSIST,
-                    CascadeType.MERGE
-            },
-            mappedBy = "members")
-    @JsonIgnore
-    private Set<Community> memberOf = new HashSet<>();    
-
     // many to many relationship with event
     @ManyToMany(fetch = FetchType.EAGER,
             cascade = {
@@ -66,7 +58,6 @@ public class Student {
             inverseJoinColumns = { @JoinColumn(name = "event_id") })
     private Set<Event> events = new HashSet<>();
 
-    //one to many relationship with member application
     @OneToMany(
 		cascade = {CascadeType.REMOVE
 				,CascadeType.MERGE
@@ -75,19 +66,27 @@ public class Student {
 	@JsonIgnore
     private Set<MemberApplication> memberApplications = new HashSet<>();
 
+    @OneToMany(
+		cascade = {CascadeType.REMOVE
+				,CascadeType.MERGE
+				,CascadeType.REFRESH})
+	@JoinColumn(name = "student_id")
+	@JsonIgnore
+    private Set<Member> memberOf = new HashSet<>();
+
+
     public Student () {
 
     }
 
     public Student(User user, Set<Post> bookmarkedPosts, Set<Community> followingCommunities,
-                    String image, Set<Tag> interests, Set<Community> memberOf)
+                    String image, Set<Tag> interests)
     {
         this.user = user;
         this.bookmarkedPosts = bookmarkedPosts;
         this.followingCommunities = followingCommunities;
         this.image = image;
         this.interests = interests;
-        this.memberOf = memberOf;
     }
 
     public User getUser() {
@@ -130,6 +129,22 @@ public class Student {
         followingCommunities.remove(community);
     }
 
+    public Set<Member> getMemberOf() {
+        return memberOf;
+    }
+
+    public void setMemberOf(Set<Member> memberOf) {
+        this.memberOf = memberOf;
+    }
+
+    public void addMember(Member member) {
+        memberOf.add(member);
+    }
+
+    public void removeMember(Member member) {
+        memberOf.remove(member);
+    }
+
     public String getImage() {
         return image;
     }
@@ -160,22 +175,6 @@ public class Student {
 
     public void removeTag(Tag tag) {
         interests.remove(tag);
-    }
-
-    public Set<Community> getMemberOf() {
-        return memberOf;
-    }
-
-    public void setMemberOf(Set<Community> memberOf) {
-        this.memberOf = memberOf;
-    }
-
-    public void addCommunityToMemberOf(Community community) {
-        memberOf.add(community);
-    }
-
-    public void deleteCommunityFromMemberOf(Community community) {
-        memberOf.remove(community);
     }
 
     public Set<Event> getEvents() {

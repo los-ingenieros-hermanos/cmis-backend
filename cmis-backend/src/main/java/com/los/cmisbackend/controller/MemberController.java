@@ -1,5 +1,6 @@
 package com.los.cmisbackend.controller;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.EventRepository;
 import com.los.cmisbackend.dao.MemberApplicationRepository;
+import com.los.cmisbackend.dao.MemberRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.Community;
+import com.los.cmisbackend.entity.Member;
 import com.los.cmisbackend.entity.MemberApplication;
 import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.util.MemberUtil;
@@ -40,53 +43,87 @@ public class MemberController {
 	MemberApplicationRepository memberApplicationRepository;
 
 	@Autowired
+	MemberRepository memberRepository;
+
+	@Autowired
 	MemberUtil memberUtil;
 
 	
 	@GetMapping("/communities/{communityId}/members")
-    public ResponseEntity<Set<Student>> getAllMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
+    public ResponseEntity<Set<Member>> getAllMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-        Set<Student> members = community.getMembers();
+		Set<Member> members = community.getMembers();
+
         return new ResponseEntity<>(members, HttpStatus.OK);
     }
     
-    @GetMapping("/communities/{communityId}/members/{memberId}")
-    public ResponseEntity<Student> getMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "memberId") Long memberId) {
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+    @GetMapping("/communities/{communityId}/members/{studentId}")
+    public ResponseEntity<Member> getMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, 
+															@PathVariable(value = "studentId") Long studentId) 
+	{
 
-        Student member = community.getMembers().stream()
-                .filter(m -> m.getId().equals(memberId))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Member with id = " + memberId));
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
         return new ResponseEntity<>(member, HttpStatus.OK);
     }
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")	
-	@DeleteMapping("/communities/{communityId}/members/{memberId}")
-	public ResponseEntity<HttpStatus> deleteMember(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "memberId") Long memberId) {
-		Community community = communityRepository.findById(communityId)
-				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
+	@GetMapping("/communities/{communityId}/authorizedMembers")
+	public ResponseEntity<Set<Member>> getAuthorizedMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
+		
+		Set<Member> authorizedMembers = new HashSet<Member>(); 
+		for (Member member : memberRepository.findByCommunityId(communityId)) {
+			Set<String>	authorizations = member.getAuthorizations();
+			if (authorizations.contains("ALL")) {
+				authorizedMembers.add(member);
+			}
+		}
 
-		Student member = community.getMembers().stream()
-				.filter(m -> m.getId().equals(memberId))
-				.findFirst()
-				.orElseThrow(() -> new ResourceNotFoundException("Not found Member with id = " + memberId));
+		return new ResponseEntity<>(authorizedMembers, HttpStatus.OK);
+	}
 
-		community.getMembers().remove(member);
-		communityRepository.save(community);
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")	
+	@DeleteMapping("/communities/{communityId}/members/{studentId}")
+	public ResponseEntity<HttpStatus> deleteMember( @PathVariable(value = "communityId") Long communityId, 
+												@PathVariable(value = "studentId") Long studentId) 
+	{
+
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		memberRepository.delete(member);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
+	@DeleteMapping("/communities/{communityId}/members")
+	public ResponseEntity<HttpStatus> deleteAllMembersOfTheCommunity(@PathVariable (value = "communityId") Long communityId)
+	{
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")	
+		Set<Member> members = memberRepository.findByCommunityId(communityId);
+		memberRepository.deleteAll(members);
+
+		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
+	}
+
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
+	@PutMapping("/communities/{communityId}/members/{studentId}")
+	public ResponseEntity<Member> updateMember(@PathVariable(value = "communityId") Long communityId, 
+												@PathVariable(value = "studentId") Long studentId,
+												@RequestBody  Set<String> authorizations) 
+	{
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+
+		member.setAuthorizations(authorizations);
+		final Member updatedMember = memberRepository.save(member);
+		return ResponseEntity.ok(updatedMember);
+	}
+
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")	
 	@GetMapping("/communities/{communityId}/memberApplications")
 	public ResponseEntity<Set<MemberApplication>> getAllMemberApplicantsByCommunityId(@PathVariable(value = "communityId") Long communityId) {
-		//if there is no community for this id return error
+
 		communityRepository.findById(communityId
 				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 		
@@ -99,7 +136,7 @@ public class MemberController {
 		return new ResponseEntity<>(memberApplications, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")
 	@GetMapping("/communities/{communityId}/memberApplications/{studentId}")
 	public ResponseEntity<MemberApplication> getMemberApplication(@PathVariable(value = "communityId") Long communityId ,
 														@PathVariable(value = "studentId") Long studentId)
@@ -116,7 +153,7 @@ public class MemberController {
 		return new ResponseEntity<>(memberApplication, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
 	@PutMapping("/communities/{communityId}/memberApplications/{applicantId}/reject")
 	public ResponseEntity<Student> rejectMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
 														@PathVariable(value = "applicantId") Long applicantId)
@@ -133,23 +170,27 @@ public class MemberController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isUserMemberOrCommunity(#communityId, authentication.principal.id)")
-	@PutMapping("/communities/{communityId}/memberApplications/{applicantId}/accept")
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
+	@PutMapping("/communities/{communityId}/memberApplications/{studentId}/accept")
 	public ResponseEntity<Student> acceptMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
-													@PathVariable(value = "applicantId") Long applicantId)
+													@PathVariable(value = "studentId") Long studentId,
+													@RequestBody Set<String> authorizations)
 	{	
-		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, applicantId);
+		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
+
+		Student student = studentRepository.findById(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
 		Community community = communityRepository.findById(communityId
 				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-		Student student = studentRepository.findById(applicantId
-				).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + applicantId));
 
-		community.addMember(student);
-		communityRepository.save(community);
+		Member member = new Member(student, community, authorizations);
+		memberRepository.save(member);
+		community.addMember(member);
 		memberApplicationRepository.delete(memberApplication);
 		return new ResponseEntity<>(student, HttpStatus.OK);
 	}
@@ -195,15 +236,19 @@ public class MemberController {
 
 	@PreAuthorize("hasRole('ADMIN')")
 	@PostMapping("/communities/{communityId}/adminAddMember/{studentId}")
-	public ResponseEntity<Student> adminAddMember(@PathVariable(value = "communityId") Long communityId, 
-											@PathVariable(value = "studentId") Long studentId)
+	public ResponseEntity<Member> adminAddMember(@PathVariable(value = "communityId") Long communityId, 
+											@PathVariable(value = "studentId") Long studentId,
+											@RequestBody Set<String> authorizations)
 	{
 		Community community = communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-		Student member = studentRepository.findById(studentId)
+		Student student = studentRepository.findById(studentId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
 
+		
+		Member member = new Member(student, community, authorizations);
+		memberRepository.save(member);
 		community.addMember(member);
 		communityRepository.save(community);
 		return new ResponseEntity<>(member, HttpStatus.OK);

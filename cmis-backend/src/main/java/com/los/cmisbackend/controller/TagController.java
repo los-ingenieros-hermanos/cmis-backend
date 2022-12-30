@@ -152,7 +152,7 @@ public class TagController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId()) ))
+                | memberUtil.isAuthorized(communityId, userDetails.getId()) ))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         if (!communityRepository.existsById(communityId)) {
@@ -172,7 +172,7 @@ public class TagController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
+                | memberUtil.isAuthorized(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Tag tag = communityRepository.findById(communityId).map(community -> {
@@ -199,7 +199,7 @@ public class TagController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
+                | memberUtil.isAuthorized(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Community community = communityRepository.findById(communityId)

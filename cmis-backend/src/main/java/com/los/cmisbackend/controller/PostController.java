@@ -158,7 +158,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
+                | memberUtil.isAuthorized(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         if (!communityRepository.existsById(communityId)) {
@@ -177,7 +177,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
+                | memberUtil.isAuthorized(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Post post = communityRepository.findById(communityId).map(community -> {
@@ -217,7 +217,7 @@ public class PostController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | memberUtil.isUserMemberOrCommunity(communityId, userDetails.getId())))
+                | memberUtil.isAuthorized(communityId, userDetails.getId())))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         if (!communityRepository.existsById(communityId)) {
