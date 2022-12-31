@@ -62,11 +62,17 @@ public class Community {
 	@JsonIgnore
 	private Set<Member> members = new HashSet<>();
 
+	@Column(name="follower_count", columnDefinition = "integer default 0")
+	private Integer followerCount = 0;
+
+	@Column(name="member_count", columnDefinition = "integer default 0")
+	private Integer memberCount = 0;
+
 	public Community() {
 	}
 
 	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags, 
-				String banner) 
+				String banner, Integer followerCount, Integer memberCount) 
 	{
 		this.user = user;
 		this.info = info;
@@ -74,6 +80,15 @@ public class Community {
 		this.image = image;
 		this.tags = tags;
 		this.banner = banner;
+		if(followerCount != null)
+			this.followerCount = followerCount;
+		else
+			this.followerCount = 0;
+
+		if(memberCount != null)
+			this.memberCount = memberCount;
+		else
+			this.memberCount = 0;	
 	}
 
 	public Community(String info) {
@@ -113,10 +128,12 @@ public class Community {
 	}
 
 	public void addFollower(Student follower) {
+		followerCount++;
 		followers.add(follower);
 	}
 
 	public void removeFollower(Student follower) {
+		followerCount--;
 		followers.remove(follower);
 	}
 
@@ -153,10 +170,12 @@ public class Community {
 	}
 
 	public void addMember(Member member) {
+		memberCount++;
 		members.add(member);
 	}
 
 	public void removeMember(Member member) {
+		memberCount--;
 		members.remove(member);
 	}
 
@@ -182,5 +201,27 @@ public class Community {
 
 	public void removeMemberApplication(MemberApplication memberApplication) {
 		memberApplications.remove(memberApplication);
+	}
+
+	public int getFollowerCount() {
+		return followerCount;
+	}
+
+	public void setFollowerCount(Integer followerCount) {
+		if(followerCount == null)
+			this.followerCount = 0;
+		else
+			this.followerCount = followerCount;
+	}
+
+	public int getMemberCount() {
+		return memberCount;
+	}
+
+	public void setMemberCount(Integer memberCount) {
+		if(memberCount == null)
+			this.memberCount = 0;
+		else
+			this.memberCount = memberCount;
 	}
 }

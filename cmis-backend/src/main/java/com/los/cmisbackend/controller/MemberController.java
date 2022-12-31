@@ -203,12 +203,17 @@ public class MemberController {
 		Community community = communityRepository.findById(communityId
 				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		if (member != null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
 		if (authorizations == null) {
 			authorizations = new HashSet<>();
 			authorizations.add("NONE");
 		}
 
-		Member member = new Member(student, community, authorizations);
+		member = new Member(student, community, authorizations);
 		memberRepository.save(member);
 		community.addMember(member);
 		memberApplicationRepository.delete(memberApplication);
@@ -258,7 +263,7 @@ public class MemberController {
 	@PostMapping("/communities/{communityId}/adminAddMember/{studentId}")
 	public ResponseEntity<Member> adminAddMember(@PathVariable(value = "communityId") Long communityId, 
 											@PathVariable(value = "studentId") Long studentId,
-											@RequestBody Set<String> authorizations)
+											@RequestBody(required = false) Set<String> authorizations)
 	{
 		Community community = communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
@@ -266,8 +271,11 @@ public class MemberController {
 		Student student = studentRepository.findById(studentId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
 
-		
-		Member member = new Member(student, community, authorizations);
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		if (member != null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}	
+		member = new Member(student, community, authorizations);
 		memberRepository.save(member);
 		community.addMember(member);
 		communityRepository.save(community);

@@ -31,7 +31,7 @@ public class Member {
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(name="authorizations")
-	private Set<String> authorizations;
+	private Set<String> authorizations = Set.of("NONE");
 
 	public Member() {
 		
