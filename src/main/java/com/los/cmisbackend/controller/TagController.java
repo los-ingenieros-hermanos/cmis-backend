@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "https://cmis-web.vercel.app"}, maxAge = 3600, allowCredentials = "true")
 @RestController
 @RequestMapping("api/cmis")
 public class TagController {
