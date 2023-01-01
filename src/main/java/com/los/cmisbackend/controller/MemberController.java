@@ -26,7 +26,7 @@ import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
 
-@CrossOrigin(origins = {"http://localhost:3000", "https://cmis-web.vercel.app"}, maxAge = 3600, allowCredentials = "true")
+@CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 //@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("api/cmis")
