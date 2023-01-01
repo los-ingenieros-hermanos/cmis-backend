@@ -49,5 +49,5 @@ jobs:
         with:
           app-name: 'cmisBackend'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_28A498DF12984CC49DCDB147DDD560AD }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D781C32114204D6CAC804E98501BF01C }}
           package: '*.jar'
