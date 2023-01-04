@@ -89,6 +89,7 @@ public class CommunityController {
 
          // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("string: " + authentication.getPrincipal());
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         // check if user is an admin or a member of the community
