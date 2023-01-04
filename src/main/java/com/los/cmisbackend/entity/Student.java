@@ -75,7 +75,6 @@ public class Student {
 	@JsonIgnore
     private Set<Member> memberOf = new HashSet<>();
 
-
     public Student () {
 
     }
