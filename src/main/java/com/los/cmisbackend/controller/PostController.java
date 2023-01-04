@@ -247,4 +247,20 @@ public class PostController {
         postRepository.deleteByCommunityId(communityId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    // get all posts by title search
+    @GetMapping("/posts/searchTitle")
+    public ResponseEntity<List<Post>> getAllPostsByTitle(@RequestParam(value = "title") String title,
+    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findPostsByTitleContaining(title, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
 }

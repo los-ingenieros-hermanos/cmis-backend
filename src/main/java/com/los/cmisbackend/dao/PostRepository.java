@@ -23,5 +23,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findPostByStudentsId(Long id);
     Page<Post> findByStudents(Student student, Pageable pageable);
     Page<Post> findByCommunityId(Long id, Pageable pageable);
-
+    Page<Post> findPostsByTitleContaining(String title, Pageable pageable);
 }
