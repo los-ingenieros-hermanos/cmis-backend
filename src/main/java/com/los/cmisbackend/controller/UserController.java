@@ -152,4 +152,22 @@ public class UserController {
         return new ResponseEntity<>(studentList, HttpStatus.OK);
     }
 
+    // find unverified users by first name containing, add pagination
+    @GetMapping("/users/unverified/search")
+    public ResponseEntity<List<User>> getUnverifiedUsersBySearch(@RequestParam(value = "search") String search,
+                                                                  @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                  @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+        Role role = roleRepository.findByName(ERole.ROLE_UNVERIFIED)
+                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+
+        Page<User> students = userRepository.findUsersByRolesAndFirstNameContaining(role, search, pageable);
+
+        List<User> unverifiedUsers = students.getNumberOfElements() == 0 ? Collections.emptyList()
+                : students.getContent();
+
+        return new ResponseEntity<>(unverifiedUsers, HttpStatus.OK);
+    }
+
 }
