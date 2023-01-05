@@ -75,6 +75,13 @@ public class Student {
 	@JsonIgnore
     private Set<Member> memberOf = new HashSet<>();
 
+    @Column(name="first_name")
+    private String firstName;
+
+    @Column(name="last_name")
+    private String lastName;
+
+
     public Student () {
 
     }
@@ -87,6 +94,8 @@ public class Student {
         this.followingCommunities = followingCommunities;
         this.image = image;
         this.interests = interests;
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
     }
 
     public User getUser() {
@@ -95,6 +104,8 @@ public class Student {
 
     public void setUser(User user) {
         this.user = user;
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
     }
 
     public Long getId() {
@@ -207,6 +218,22 @@ public class Student {
 
     public void removeMemberApplication(MemberApplication memberApplication) {
         memberApplications.remove(memberApplication);
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     @Override
