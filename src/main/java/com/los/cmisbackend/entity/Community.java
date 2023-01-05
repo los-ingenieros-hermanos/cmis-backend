@@ -34,6 +34,12 @@ public class Community {
 	@JsonIgnore
 	private Set<Student> followers = new HashSet<>();
 
+	@Column(name="type")
+	private String type = "community";
+
+	@Column(name="name")
+	private String name;
+
 	@Lob
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
     private String image;
@@ -68,11 +74,14 @@ public class Community {
 	@Column(name="member_count", columnDefinition = "integer default 0")
 	private Integer memberCount = 0;
 
+	@Column(name = "role")
+	private String role = "community";
+
 	public Community() {
 	}
 
-	public Community(User user, String info, Set<Student> followers, String image, Set<Tag> tags, 
-				String banner, Integer followerCount, Integer memberCount) 
+	public Community(User user, String info, String type, Set<Student> followers, String image, Set<Tag> tags,
+				String banner, Integer followerCount, Integer memberCount)
 	{
 		this.user = user;
 		this.info = info;
@@ -80,6 +89,15 @@ public class Community {
 		this.image = image;
 		this.tags = tags;
 		this.banner = banner;
+		this.type = type;
+		this.name = user.getFirstName();
+		this.role = "community";
+		Set<Role> roles = user.getRoles();
+		Role role = roles.iterator().next();
+		ERole name = role.getName();
+		if(name.equals(ERole.ROLE_UNVERIFIED))
+			this.role = "unverified";
+
 		if(followerCount != null)
 			this.followerCount = followerCount;
 		else
@@ -125,6 +143,21 @@ public class Community {
 
 	public void setUser(User user) {
 		this.user = user;
+		this.name = user.getFirstName();
+		this.role = "community";
+		Set<Role> roles = user.getRoles();
+		Role role = roles.iterator().next();
+		ERole name = role.getName();
+		if(name.equals(ERole.ROLE_UNVERIFIED))
+			this.role = "unverified";
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 	public void addFollower(Student follower) {
@@ -224,4 +257,23 @@ public class Community {
 		else
 			this.memberCount = memberCount;
 	}
+
+	public String getRole() {
+
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
 }
