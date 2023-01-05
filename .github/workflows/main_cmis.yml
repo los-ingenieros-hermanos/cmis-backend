@@ -14,10 +14,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Set environment variables
-    env:
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       - uses: actions/checkout@v2
       - name: Set up Java version
         uses: actions/setup-java@v1
