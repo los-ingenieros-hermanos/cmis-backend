@@ -25,4 +25,7 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
     Page<Community> findCommunitiesByNameContainingAndRole(String name, String role, Pageable pageable);
 
     Page<Community> findCommunitiesByType(String type, Pageable pageable);
+
+    Page<Community> findAllByOrderByNameAsc(Pageable pageable);
+    Page<Community> findAllByOrderByNameDesc(Pageable pageable);
 }

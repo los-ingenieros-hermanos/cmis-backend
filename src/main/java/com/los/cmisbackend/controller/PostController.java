@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -225,6 +226,13 @@ public class PostController {
                 System.out.println(postRequest);
             }
             System.out.println(postRequest);
+            Date date = new Date();
+            date.setDay(postRequest.getDate().getDay());
+            date.setMonth(postRequest.getDate().getMonth());
+            date.setYear(postRequest.getDate().getYear());
+            date = dateRepository.save(date);
+            postRequest.setDate(date);
+
             return postRepository.save(postRequest);
         }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
@@ -277,5 +285,64 @@ public class PostController {
         return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
+    // get sorted posts by date
+    @GetMapping("/posts/sortDescending")
+    public ResponseEntity<List<Post>> getAllPostsSortedByDateDescending(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByOrderByDateDesc(pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
+    // get sorted posts by date ascending
+    @GetMapping("/posts/sortAscending")
+    public ResponseEntity<List<Post>> getAllPostsSortedByDateAscending(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByOrderByDateAsc(pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
+    // get all posts by title ascending
+    @GetMapping("/posts/sortTitleAscending")
+    public ResponseEntity<List<Post>> getAllPostsSortedByTitleAscending(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByOrderByTitleAsc(pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
+    // get all posts by title descending
+    @GetMapping("/posts/sortTitleDescending")
+    public ResponseEntity<List<Post>> getAllPostsSortedByTitleDescending(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByOrderByTitleDesc(pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
 
 }

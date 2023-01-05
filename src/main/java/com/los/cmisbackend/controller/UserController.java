@@ -163,4 +163,35 @@ public class UserController {
         return new ResponseEntity<>(unverifiedUsers, HttpStatus.OK);
     }
 
+    // find all communities by order ascending by name
+    @GetMapping("/communities/nameAsc")
+    public ResponseEntity<List<Community>> getCommunitiesBySortAsc(
+                                                                  @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                  @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Community> communities = communityRepository.findAllByOrderByNameAsc(pageable);
+
+        List<Community> communityList = communities.getNumberOfElements() == 0 ? Collections.emptyList()
+                : communities.getContent();
+
+        return new ResponseEntity<>(communityList, HttpStatus.OK);
+    }
+
+    // find all communities by order descending by name
+    @GetMapping("/communities/nameDesc")
+    public ResponseEntity<List<Community>> getCommunitiesBySortDsc(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Community> communities = communityRepository.findAllByOrderByNameDesc(pageable);
+
+        List<Community> communityList = communities.getNumberOfElements() == 0 ? Collections.emptyList()
+                : communities.getContent();
+
+        return new ResponseEntity<>(communityList, HttpStatus.OK);
+    }
 }
