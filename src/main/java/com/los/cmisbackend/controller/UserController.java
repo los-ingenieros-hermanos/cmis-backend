@@ -5,6 +5,7 @@ import com.los.cmisbackend.dao.RoleRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.*;
+import com.los.cmisbackend.payload.request.PasswordUpdateRequest;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -40,6 +42,9 @@ public class UserController {
 
     @Autowired
     RoleRepository roleRepository;
+
+    @Autowired
+    PasswordEncoder encoder;
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
@@ -194,4 +199,30 @@ public class UserController {
 
         return new ResponseEntity<>(communityList, HttpStatus.OK);
     }
+
+    // update password using PasswordUpdateRequest
+    @PutMapping("/users/{id}/password")
+    public ResponseEntity<User> updatePassword(@PathVariable("id") Long id, @RequestBody PasswordUpdateRequest passwordUpdateRequest)
+    {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                && !userDetails.getId().equals(id))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
+
+        // check if old password is correct
+        if (!encoder.matches(passwordUpdateRequest.getOldPassword(), user.getPassword()))
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        // update password
+        user.setPassword(encoder.encode(passwordUpdateRequest.getNewPassword()));
+
+        userRepository.save(user);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
 }
