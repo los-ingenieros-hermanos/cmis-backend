@@ -22,7 +22,7 @@ public class Post {
     @Column(name="title")
     private String title;
 
-    @Column(name="text")
+    @Column(name="text", length = 1000)
     private String text;
 
     @Column(name="visibility", nullable = false)
