@@ -109,6 +109,9 @@ public class StudentController {
         if(studentsRequest.getImage() != null)
             student.setImage(studentsRequest.getImage());
 
+        if(studentsRequest.getBanner() != null)
+            student.setBanner(studentsRequest.getBanner());
+
         return new ResponseEntity<>(studentRepository.save(student), HttpStatus.OK);
     }
 

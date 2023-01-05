@@ -52,6 +52,10 @@ public class Student {
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
     private String image;
 
+    @Lob
+    @Column(name = "banner", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
+    private String banner;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "student_tag",
             joinColumns = @JoinColumn(name = "student_id"),
@@ -295,6 +299,14 @@ public class Student {
 
     public void setLikedPosts(Set<Post> likedPosts) {
         this.likedPosts = likedPosts;
+    }
+
+    public String getBanner() {
+        return banner;
+    }
+
+    public void setBanner(String banner) {
+        this.banner = banner;
     }
 
     @Override
