@@ -45,7 +45,7 @@ public class CommunityController {
     @Autowired
     MemberUtil memberUtil;
 
-    @GetMapping({ "/communities/{id}", "/users/{id}/communities" })
+    @GetMapping({ "/communities/{id}" })
     public ResponseEntity<Community> getCommunityById(@PathVariable(value = "id") Long id) {
         Community community = communityRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + id));
