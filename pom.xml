@@ -86,11 +86,11 @@
         <version>2.5.0</version>  
         <configuration> 
           <schemaVersion>v2</schemaVersion>  
-          <subscriptionId>dc0d38bc-0725-4915-ad1c-184cf838ab89</subscriptionId>  
-          <resourceGroup>cmis-backendResource</resourceGroup>  
-          <appName>cmisBackend</appName>  
+          <subscriptionId>0b8c6467-36d8-45ad-b946-20e35814787d</subscriptionId>  
+          <resourceGroup>cmisResource</resourceGroup>  
+          <appName>cmis</appName>  
           <pricingTier>P1v2</pricingTier>  
-          <region>centralus</region>  
+          <region>switzerlandnorth</region>  
           <runtime> 
             <os>Windows</os>  
             <javaVersion>Java 17</javaVersion>  
