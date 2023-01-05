@@ -81,6 +81,17 @@ public class Student {
     @Column(name="last_name")
     private String lastName;
 
+    @Column(name="instagram")
+    private String instagram;
+
+    @Column(name="linkedin")
+    private String linkedin;
+
+    @Column(name="github")
+    private String github;
+
+    @Column(name="twitter")
+    private String twitter;
 
     public Student () {
 
@@ -210,6 +221,38 @@ public class Student {
 
     public void setMemberApplications(Set<MemberApplication> memberApplications) {
         this.memberApplications = memberApplications;
+    }
+
+    public String getInstagram() {
+        return instagram;
+    }
+
+    public void setInstagram(String instagram) {
+        this.instagram = instagram;
+    }
+
+    public String getLinkedin() {
+        return linkedin;
+    }
+
+    public void setLinkedin(String linkedin) {
+        this.linkedin = linkedin;
+    }
+
+    public String getGithub() {
+        return github;
+    }
+
+    public void setGithub(String github) {
+        this.github = github;
+    }
+
+    public String getTwitter() {
+        return twitter;
+    }
+
+    public void setTwitter(String twitter) {
+        this.twitter = twitter;
     }
 
     public void addMemberApplication(MemberApplication memberApplication) {

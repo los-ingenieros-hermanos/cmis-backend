@@ -77,6 +77,18 @@ public class Community {
 	@Column(name = "role")
 	private String role = "community";
 
+	@Column(name="instagram")
+	private String instagram;
+
+	@Column(name="linkedin")
+	private String linkedin;
+
+	@Column(name="github")
+	private String github;
+
+	@Column(name="twitter")
+	private String twitter;
+
 	public Community() {
 		this.type = "community";
 	}
@@ -219,6 +231,38 @@ public class Community {
 
 	public void setBanner(String banner) {
 		this.banner = banner;
+	}
+
+	public String getInstagram() {
+		return instagram;
+	}
+
+	public void setInstagram(String instagram) {
+		this.instagram = instagram;
+	}
+
+	public String getLinkedin() {
+		return linkedin;
+	}
+
+	public void setLinkedin(String linkedin) {
+		this.linkedin = linkedin;
+	}
+
+	public String getGithub() {
+		return github;
+	}
+
+	public void setGithub(String github) {
+		this.github = github;
+	}
+
+	public String getTwitter() {
+		return twitter;
+	}
+
+	public void setTwitter(String twitter) {
+		this.twitter = twitter;
 	}
 
 	public Set<MemberApplication> getMemberApplications() {
