@@ -119,7 +119,7 @@ public class AuthController {
 
                         System.out.println(adminRepository.findAll());
                         Admin admin = adminRepository.findAll().get(0);
-
+                        user.setRoles(roles);
                         community.setUser(user);
                         communityRepository.save(community);
 
@@ -131,6 +131,7 @@ public class AuthController {
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(userRole);
                         Student student = new Student();
+                        user.setRoles(roles);
                         student.setUser(user);
                         studentRepository.save(student);
                 }
