@@ -33,6 +33,16 @@ public class Student {
             cascade = {
                     CascadeType.PERSIST,
                     CascadeType.MERGE
+            })
+    @JoinTable(name = "liked_post_student",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "post_id") })
+    private Set<Post> likedPosts = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
             },
             mappedBy = "followers")
     @JsonIgnore
@@ -277,6 +287,14 @@ public class Student {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public Set<Post> getLikedPosts() {
+        return likedPosts;
+    }
+
+    public void setLikedPosts(Set<Post> likedPosts) {
+        this.likedPosts = likedPosts;
     }
 
     @Override

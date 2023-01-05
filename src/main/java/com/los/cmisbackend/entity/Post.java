@@ -30,7 +30,17 @@ public class Post {
 
     // mappings
 
-    //private Set<Student> likes = new HashSet<>();
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "likedPosts")
+    @JsonIgnore
+    private Set<Student> likes = new HashSet<>();
+
+    @Column(name="like_num")
+    private Integer likeNum = Integer.valueOf(0);
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name= "event_id")
@@ -177,4 +187,19 @@ public class Post {
         this.image = image;
     }
 
+    public Set<Student> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<Student> likes) {
+        this.likes = likes;
+    }
+
+    public Integer getLikeNum() {
+        return likeNum;
+    }
+
+    public void setLikeNum(Integer likeNum) {
+        this.likeNum = likeNum;
+    }
 }

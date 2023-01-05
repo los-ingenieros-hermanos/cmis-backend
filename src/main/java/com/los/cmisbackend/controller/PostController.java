@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -345,4 +346,96 @@ public class PostController {
         return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
+    // get all students who liked the post
+    @GetMapping("/posts/{postId}/likes")
+    public ResponseEntity<Set<Student>> getAllUsersWhoLikedPost(@PathVariable(value = "postId") Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Not found Post with id = " + postId);
+        }
+        Post post = postRepository.findPostById(postId);
+
+        Set<Student> students = post.getLikes();
+
+        return new ResponseEntity<>(students, HttpStatus.OK);
+    }
+
+    // get all posts student liked
+    @GetMapping("/students/{studentId}/likedPosts")
+    public ResponseEntity<Set<Post>> getLikedPosts(@PathVariable(value = "studentId") Long studentId) {
+        if(!studentRepository.existsById(studentId)) {
+            throw new ResourceNotFoundException("Not found Student with id = " + studentId);
+        }
+
+        Student student = studentRepository.findStudentById(studentId);
+
+        Set<Post> posts = student.getLikedPosts();
+
+        return new ResponseEntity<>(posts, HttpStatus.OK);
+    }
+
+
+
+    // student likes post
+    @PostMapping("students/{studentId}/posts/{postId}/like")
+    public ResponseEntity<Post> likePost(@PathVariable(value = "studentId") Long studentId,
+                                         @PathVariable(value = "postId") Long postId) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_STUDENT"))
+                | memberUtil.isAuthorized(postRepository.findById(postId).get().getCommunity().getId(), userDetails.getId())))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        if (!studentRepository.existsById(studentId)) {
+            throw new ResourceNotFoundException("Not found Student with id = " + studentId);
+        }
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Not found Post with id = " + postId);
+        }
+
+        Post post = postRepository.findById(postId).get();
+        Student student = studentRepository.findById(studentId).get();
+
+        if (post.getLikes().contains(student)) {
+            student.getLikedPosts().remove(post);
+            post.getLikes().remove(student);
+            post.setLikeNum(post.getLikeNum().intValue() - 1);
+        } else {
+            student.getLikedPosts().add(post);
+            post.getLikes().add(student);
+            post.setLikeNum(post.getLikeNum().intValue() + 1);
+        }
+
+        studentRepository.save(student);
+        Post updatedPost = postRepository.save(post);
+        return new ResponseEntity<>(updatedPost, HttpStatus.OK);
+    }
+
+    // get all posts sorted by like number descending
+    @GetMapping("/posts/sortLikeNumDescending")
+    public ResponseEntity<List<Post>> getAllPostsSortedByLikeNumDescending(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByOrderByLikeNumDesc(pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
+    // get like number of single post
+    @GetMapping("/posts/{postId}/likeNum")
+    public ResponseEntity<Integer> getLikeNum(@PathVariable(value = "postId") Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Not found Post with id = " + postId);
+        }
+        Post post = postRepository.findPostById(postId);
+
+        return new ResponseEntity<>(post.getLikeNum(), HttpStatus.OK);
+
+    }
 }
