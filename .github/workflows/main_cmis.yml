@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: windows-latest
     environment:
-      name:'Production'
+      name: 'Production'
 
     steps:
       - uses: actions/checkout@v2
