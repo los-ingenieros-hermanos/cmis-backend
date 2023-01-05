@@ -30,4 +30,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByOrderByTitleAsc(Pageable pageable);
     Page<Post> findAllByOrderByTitleDesc(Pageable pageable);
     Page<Post> findAllByOrderByLikeNumDesc(Pageable pageable);
+    Page<Post> findAllByVisibilityContaining(String visibility, Pageable pageable);
 }

@@ -438,4 +438,19 @@ public class PostController {
         return new ResponseEntity<>(post.getLikeNum(), HttpStatus.OK);
 
     }
+
+    // get all global posts
+    @GetMapping("/posts/global")
+    public ResponseEntity<List<Post>> getAllGlobalPosts(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByVisibilityContaining("global", pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
 }
