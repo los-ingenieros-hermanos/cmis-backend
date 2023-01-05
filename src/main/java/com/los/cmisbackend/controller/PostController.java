@@ -74,14 +74,19 @@ public class PostController {
     public ResponseEntity<HttpStatus> deletePost(@PathVariable("id") Long id) {
         //postRepository.deleteById(id);
 
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Post with id = " + id));
+
+        Long communityId = post.getCommunity().getId();
+
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if (!userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
+
+        if (!userDetails.getId().equals(communityId) &&
+            !authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN")))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        Post post = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Post with id = " + id));
         List<Student> students = studentRepository.findStudentsByBookmarkedPostsId(id);
 
         for(Student s: students) {
