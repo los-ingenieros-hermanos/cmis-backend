@@ -15,7 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
+      - name: Set environment variables
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       - name: Set up Java version
         uses: actions/setup-java@v1
         with:
@@ -38,6 +41,10 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      - name: Set environment variables
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
@@ -51,5 +58,5 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FA04B7EB74284D28B72CB47B443413BB }}
           package: '*.jar'
-          db_username: ${{ secrets.DB_USERNAME }}
-          db_password: ${{ secrets.DB_PASSWORD }}
+          db_username: ${DB_USERNAME}
+          db_password: ${DB_PASSWORD}
