@@ -4,10 +4,7 @@ import com.los.cmisbackend.dao.AdminRepository;
 import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.RoleRepository;
 import com.los.cmisbackend.dao.UserRepository;
-import com.los.cmisbackend.entity.Admin;
-import com.los.cmisbackend.entity.ERole;
-import com.los.cmisbackend.entity.Role;
-import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -92,6 +89,13 @@ public class AdminController {
         roles.add(role);
         user.setRoles(roles);
         userRepository.save(user);
+
+        if(role.getName().equals(ERole.ROLE_COMMUNITY)) {
+            Community community = communityRepository.findCommunityById(user.getId());
+            community.setRole("community");
+            communityRepository.save(community);
+        }
+
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
