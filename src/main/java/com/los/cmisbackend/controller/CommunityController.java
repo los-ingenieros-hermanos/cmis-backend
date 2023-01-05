@@ -181,23 +181,43 @@ public class CommunityController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         
-        if ( !userDetails.getId().equals(followerId))
+        if ( !(userDetails.getId().equals(followerId) ||
+                userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        Community community = studentRepository.findById(followerId).map(follower -> {
-            Long communityId = communityRequest.getId();
+        Community community = communityRepository.findById(communityRequest.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityRequest.getId()));
 
-            // community is existed
-            if (communityId != null) {
-                Community _community = communityRepository.findById(communityId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-                _community.addFollower(follower);
-                communityRepository.save(_community);
-                return _community;
-            }
+        Student follower = studentRepository.findById(followerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
 
-            throw new ResourceNotFoundException("Community does not exists.");
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
+        Set<Student> followers = community.getFollowers();
+
+        System.out.println("HERE !!!!" + followers);
+        // check if the student is already following the community
+        if (followers.contains(follower))
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        Integer followersCount = community.getFollowerCount();
+        community.setFollowerCount(followersCount + 1);
+        followers.add(follower);
+        community.setFollowers(followers);
+        communityRepository.save(community);
+
+//        Community community = studentRepository.findById(followerId).map(follower -> {
+//            Long communityId = communityRequest.getId();
+//
+//            // community is existed
+//            if (communityId != null) {
+//                Community _community = communityRepository.findById(communityId)
+//                        .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+//                _community.addFollower(follower);
+//                communityRepository.save(_community);
+//                return _community;
+//            }
+//
+//            throw new ResourceNotFoundException("Community does not exists.");
+//        }).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
 
         return new ResponseEntity<>(community, HttpStatus.OK);
     }
@@ -209,7 +229,8 @@ public class CommunityController {
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if ( !userDetails.getId().equals(followerId))
+        if ( !(userDetails.getId().equals(followerId) ||
+                userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Student follower = studentRepository.findById(followerId)
@@ -218,7 +239,16 @@ public class CommunityController {
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-        community.removeFollower(follower);
+        Set<Student> followers = community.getFollowers();
+
+        // check if the student is not following the community
+        if (!followers.contains(follower))
+            return new ResponseEntity<>(HttpStatus.OK);
+
+        Integer followersCount = community.getFollowerCount();
+        community.setFollowerCount(followersCount - 1);
+        followers.remove(follower);
+        community.setFollowers(followers);
         communityRepository.save(community);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

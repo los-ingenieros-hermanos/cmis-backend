@@ -174,12 +174,10 @@ public class Community {
 	}
 
 	public void addFollower(Student follower) {
-		followerCount++;
 		followers.add(follower);
 	}
 
 	public void removeFollower(Student follower) {
-		followerCount--;
 		followers.remove(follower);
 	}
 

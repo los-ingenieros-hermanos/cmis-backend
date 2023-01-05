@@ -170,56 +170,75 @@ public class StudentController {
         return new ResponseEntity<>(students, HttpStatus.OK);
     }
 
-    @PostMapping("/communities/{communityId}/followers")
-    public ResponseEntity<Student> addFollowerToCommunity(
-            @PathVariable(value = "communityId") Long communityId, @RequestBody Student followerRequest) {
+//    @PostMapping("/communities/{communityId}/followers")
+//    public ResponseEntity<Student> addFollowerToCommunity(
+//            @PathVariable(value = "communityId") Long communityId, @RequestBody Student followerRequest) {
+//
+//        // check authentication
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+//                | (userDetails.getId().equals(followerRequest.getId()))))
+//            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+//
+//
+//        Community community = communityRepository.findById(communityId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Not found community with id = " + communityId));
+//
+//        Student follower = studentRepository.findById(followerRequest.getId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + followerRequest.getId()));
+//
+//        Set<Student> followers = community.getFollowers();
+//
+//        if(followers.contains(follower))
+//            return new ResponseEntity<>(HttpStatus.OK);
+//
+//        Integer followersCount = community.getFollowerCount();
+//        followers.add(follower);
+//        community.setFollowers(followers);
+//        community.setFollowerCount(followersCount + 1);
+//        communityRepository.save(community);
+//
+////        Student follower = communityRepository.findById(communityId).map(community -> {
+////            Long followerId = followerRequest.getId();
+////
+////            // follower is existed
+////            if (followerId != null) {
+////                Student _follower = studentRepository.findById(followerId)
+////                        .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
+////                // check if follower is already f
+////                community.addFollower(_follower);
+////                communityRepository.save(community);
+////                return _follower;
+////            }
+////
+////            throw new ResourceNotFoundException("Student does not exists.");
+////        }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+//
+//        return new ResponseEntity<>(follower, HttpStatus.CREATED);
+//    }
 
-        // check authentication
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(followerRequest.getId()))))
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-        Student follower = communityRepository.findById(communityId).map(community -> {
-            Long followerId = followerRequest.getId();
-
-            // follower is existed
-            if (followerId != null) {
-                Student _follower = studentRepository.findById(followerId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
-                community.addFollower(_follower);
-                communityRepository.save(community);
-                return _follower;
-            }
-
-            throw new ResourceNotFoundException("Student does not exists.");
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-
-        return new ResponseEntity<>(follower, HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/communities/{communityId}/followers/{followerId}")
-    public ResponseEntity<HttpStatus> deleteFollowerFromCommunity(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "followerId") Long followerId) {
-
-        // check authentication
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(followerId))
-                | memberUtil.isAuthorized(communityId, userDetails.getId())))
-            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-
-        Community community = communityRepository.findById(communityId)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
-
-        Student follower = studentRepository.findById(followerId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
-        community.removeFollower(follower);
-        communityRepository.save(community);
-
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+//    @DeleteMapping("/communities/{communityId}/followers/{followerId}")
+//    public ResponseEntity<HttpStatus> deleteFollowerFromCommunity(@PathVariable(value = "communityId") Long communityId, @PathVariable(value = "followerId") Long followerId) {
+//
+//        // check authentication
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+//        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+//                | (userDetails.getId().equals(followerId))
+//                | memberUtil.isAuthorized(communityId, userDetails.getId())))
+//            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+//
+//        Community community = communityRepository.findById(communityId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+//
+//        Student follower = studentRepository.findById(followerId)
+//                        .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + followerId));
+//        community.removeFollower(follower);
+//        communityRepository.save(community);
+//
+//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
 
     @PutMapping("/students/{id}/updateImage")
 	public ResponseEntity<Student> updateImage(@PathVariable(value = "id") Long id,
