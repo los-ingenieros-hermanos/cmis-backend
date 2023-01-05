@@ -7,6 +7,9 @@ import com.los.cmisbackend.entity.ProjectIdea;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -108,4 +111,34 @@ public class ProjectIdeaController {
         return new ResponseEntity<>(updatedProjectIdea, HttpStatus.OK);
     }
 
+    @DeleteMapping("/projectidea/{id}")
+    public ResponseEntity<?> deleteProjectIdea(@PathVariable(value = "id") Long id) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        ProjectIdea projectIdea = projectIdeaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found project idea with id = " + id));
+        Long studentId = projectIdea.getStudent().getId();
+        if (!(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(studentId)))
+        )
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        projectIdeaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found project idea with id = " + id));
+
+        projectIdeaRepository.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // add project idea search
+    @GetMapping("/projectidea/search")
+    public ResponseEntity<List<ProjectIdea>> searchProjectIdeas(@RequestParam(value = "search", required = false) String search,
+                                                                @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProjectIdea> projectIdeas = projectIdeaRepository.findProjectIdeaByTitleContainingOrTextContaining(search, search, pageable);
+        return ResponseEntity.ok(projectIdeas.getContent());
+    }
 }
