@@ -51,3 +51,5 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FA04B7EB74284D28B72CB47B443413BB }}
           package: '*.jar'
+          MYSQLCONNSTR_username: ${{ secrets.MYSQLCONNSTR_username }}
+          MYSQLCONNSTR_password: ${{ secrets.MYSQLCONNSTR_password }}
