@@ -54,7 +54,7 @@ public class CommunityController {
     }
 
     @GetMapping("/communities")
-    public ResponseEntity<List<Community>> getAllCommunities(
+    public ResponseEntity<List<Community>> getAllTeams(
             @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
 			@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
     {
@@ -69,6 +69,20 @@ public class CommunityController {
         return new ResponseEntity<>(communities, HttpStatus.OK);
     }
 
+    @GetMapping("/teams")
+    public ResponseEntity<List<Community>> getAllCommunities(
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+            Pageable pageable = PageRequest.of(page, size);
+
+            Page<Community> teams = communityRepository.findCommunitiesByType("team", pageable);
+
+            List<Community> teamsList = teams.getNumberOfElements() == 0 ? Collections.emptyList()
+                    : teams.getContent();
+
+            return new ResponseEntity<>(teamsList, HttpStatus.OK);
+    }
     @PostMapping("/users/{userId}/communities")
     public ResponseEntity<Community> createCommunity(@PathVariable(value = "userId") Long userId,
                                                  @RequestBody Community communitiesRequest) {
@@ -106,7 +120,7 @@ public class CommunityController {
             community.setImage(communitiesRequest.getImage());
 
         if(communitiesRequest.getType() != null &&
-                (community.getType() == "community" || community.getType() == "team"))
+                (community.getType().equals("community") || community.getType().equals("team")))
             community.setType(communitiesRequest.getType());
 
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);

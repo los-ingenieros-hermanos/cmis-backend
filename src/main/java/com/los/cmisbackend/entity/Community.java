@@ -78,6 +78,7 @@ public class Community {
 	private String role = "community";
 
 	public Community() {
+		this.type = "community";
 	}
 
 	public Community(User user, String info, String type, Set<Student> followers, String image, Set<Tag> tags,
