@@ -4,10 +4,7 @@ import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.RoleRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.dao.UserRepository;
-import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.ERole;
-import com.los.cmisbackend.entity.Role;
-import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -118,17 +115,15 @@ public class UserController {
 
     // find communities by first name containing, add pagination
     @GetMapping("/communities/search")
-    public ResponseEntity<List<User>> getCommunitiesBySearch(@RequestParam(value = "search") String search,
+    public ResponseEntity<List<Community>> getCommunitiesBySearch(@RequestParam(value = "search") String search,
                                                                   @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
                                                                   @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 
-        Page<User> communities = userRepository.findUsersByRolesAndFirstNameContaining(role, search, pageable);
+        Page<Community> communities = communityRepository.findCommunitiesByNameContainingAndRole(search, "community", pageable);
 
-        List<User> communityList = communities.getNumberOfElements() == 0 ? Collections.emptyList()
+        List<Community> communityList = communities.getNumberOfElements() == 0 ? Collections.emptyList()
                 : communities.getContent();
 
         return new ResponseEntity<>(communityList, HttpStatus.OK);
@@ -136,7 +131,7 @@ public class UserController {
 
     // find communities by first name containing, add pagination
     @GetMapping("/students/search")
-    public ResponseEntity<List<User>> getStudentsBySearch(@RequestParam(value = "search") String search,
+    public ResponseEntity<List<Student>> getStudentsBySearch(@RequestParam(value = "search") String search,
                                                              @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
                                                              @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
     {
@@ -144,28 +139,26 @@ public class UserController {
         Role role = roleRepository.findByName(ERole.ROLE_STUDENT)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 
-        Page<User> students = userRepository.findUsersByRolesAndFirstNameContaining(role, search, pageable);
+        Page<Student> students = studentRepository.findAllByFirstNameContainingOrLastNameContaining(search, search, pageable);
 
-        List<User> studentList = students.getNumberOfElements() == 0 ? Collections.emptyList()
+        List<Student> studentList = students.getNumberOfElements() == 0 ? Collections.emptyList()
                 : students.getContent();
 
         return new ResponseEntity<>(studentList, HttpStatus.OK);
     }
 
     // find unverified users by first name containing, add pagination
-    @GetMapping("/users/unverified/search")
-    public ResponseEntity<List<User>> getUnverifiedUsersBySearch(@RequestParam(value = "search") String search,
+    @GetMapping("/unverified/search")
+    public ResponseEntity<List<Community>> getUnverifiedUsersBySearch(@RequestParam(value = "search") String search,
                                                                   @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
                                                                   @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
     {
         Pageable pageable = PageRequest.of(page, size);
-        Role role = roleRepository.findByName(ERole.ROLE_UNVERIFIED)
-                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 
-        Page<User> students = userRepository.findUsersByRolesAndFirstNameContaining(role, search, pageable);
+        Page<Community> unvcommunities = communityRepository.findCommunitiesByNameContainingAndRole(search, "unverified", pageable);
 
-        List<User> unverifiedUsers = students.getNumberOfElements() == 0 ? Collections.emptyList()
-                : students.getContent();
+        List<Community> unverifiedUsers = unvcommunities.getNumberOfElements() == 0 ? Collections.emptyList()
+                : unvcommunities.getContent();
 
         return new ResponseEntity<>(unverifiedUsers, HttpStatus.OK);
     }
