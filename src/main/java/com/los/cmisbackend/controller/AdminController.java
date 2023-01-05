@@ -6,7 +6,11 @@ import com.los.cmisbackend.dao.RoleRepository;
 import com.los.cmisbackend.dao.UserRepository;
 import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
+import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +48,10 @@ public class AdminController {
     }
 
     @GetMapping("/admin/{id}/unverifiedCommunities")
-    public ResponseEntity<Set<User>> getUnverifiedCommunities(@PathVariable(value = "id") Long id) {
+    public ResponseEntity<List<Community>> getUnverifiedCommunities(@PathVariable(value = "id") Long id,
+                                                                    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
         // check authentication
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -52,9 +60,14 @@ public class AdminController {
 
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found admin with id = " + id));
-        Set<User> users = admin.getUnverifiedCommunities();
 
-        return new ResponseEntity<>(users, HttpStatus.OK);
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Community> unverifiedCommunities = communityRepository.findCommunitiesByRole("unverified", pageable);
+
+        List<Community> communities = unverifiedCommunities.getNumberOfElements() > 0 ? unverifiedCommunities.getContent() : Collections.emptyList();
+
+        return new ResponseEntity<>(communities, HttpStatus.OK);
     }
 
     @PostMapping("/admin/{id}/unverifiedCommunities/{userId}/accept")
