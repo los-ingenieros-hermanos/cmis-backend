@@ -18,9 +18,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      env: 
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_USERNAME: ${{ secrets.DB_USERNAME }}
       - uses: actions/checkout@v2
 
       - name: Set up Java version
@@ -58,5 +55,5 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_964279C7E4374595AA725DB1FE054B3E }}
           package: '*.jar'
-          db_username : ${ DB_USERNAME }
-          db_password : ${ DB_PASSWORD }
+          DB_USERNAME : ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD : ${{ secrets.DB_PASSWORD }}
