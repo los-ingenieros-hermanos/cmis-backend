@@ -123,6 +123,25 @@ public class CommunityController {
                 (community.getType().equals("community") || community.getType().equals("team")))
             community.setType(communitiesRequest.getType());
 
+        if(communitiesRequest.getName() != null) {
+            User user = community.getUser();
+            user.setFirstName(communitiesRequest.getName());
+            community.setUser(user);
+            userRepository.save(user);
+        }
+
+        if(communitiesRequest.getBanner() != null)
+            community.setBanner(communitiesRequest.getBanner());
+
+        if(communitiesRequest.getInstagram() != null)
+            community.setInstagram(communitiesRequest.getInstagram());
+
+        if(communitiesRequest.getGithub() != null)
+            community.setGithub(communitiesRequest.getGithub());
+
+        if(communitiesRequest.getTwitter() != null)
+            community.setTwitter(communitiesRequest.getTwitter());
+
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);
     }
 
