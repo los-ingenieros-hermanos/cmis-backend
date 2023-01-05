@@ -28,13 +28,19 @@ public class Post {
     @Column(name="visibility", nullable = false)
     private String visibility;
 
+    // mappings
+
+    //private Set<Student> likes = new HashSet<>();
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name= "event_id")
     private List<Event> event = new ArrayList<>();
 
     // add date to the post
-
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @MapsId
+    @JoinColumn(name= "date_id")
+    private Date date;
 
     @ManyToMany(fetch = FetchType.LAZY,
             cascade = {
@@ -139,6 +145,14 @@ public class Post {
 
     public void removeEvent(Event event) {
         this.event.remove(event);
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     @Override
