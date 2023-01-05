@@ -144,7 +144,7 @@ public class AdminController {
             communityRepository.deleteById(userId);
         }
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/admin/createCommunity")
