@@ -1,12 +1,7 @@
 package com.los.cmisbackend.controller;
 
-import com.los.cmisbackend.dao.CommunityRepository;
-import com.los.cmisbackend.dao.StudentRepository;
-import com.los.cmisbackend.dao.TagRepository;
-import com.los.cmisbackend.dao.UserRepository;
-import com.los.cmisbackend.entity.Community;
-import com.los.cmisbackend.entity.Student;
-import com.los.cmisbackend.entity.User;
+import com.los.cmisbackend.dao.*;
+import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
@@ -45,6 +40,9 @@ public class CommunityController {
     TagRepository tagRepository;
 
     @Autowired
+    RoleRepository roleRepository;
+
+    @Autowired
     MemberUtil memberUtil;
 
     @GetMapping({ "/communities/{id}", "/users/{id}/communities" })
@@ -63,7 +61,7 @@ public class CommunityController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Community> communitiesPage = communityRepository.findAll(pageable);
+        Page<Community> communitiesPage = communityRepository.findCommunitiesByRole("community", pageable);
 
         List<Community> communities = communitiesPage.getNumberOfElements() == 0 ? Collections.emptyList()
                 : communitiesPage.getContent();
@@ -107,6 +105,9 @@ public class CommunityController {
         if(communitiesRequest.getImage() != null)
             community.setImage(communitiesRequest.getImage());
 
+        if(communitiesRequest.getType() != null &&
+                (community.getType() == "community" || community.getType() == "team"))
+            community.setType(communitiesRequest.getType());
 
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);
     }
