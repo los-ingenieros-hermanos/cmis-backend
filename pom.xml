@@ -90,7 +90,7 @@
           <resourceGroup>cmisResource</resourceGroup>  
           <appName>cmis</appName>  
           <pricingTier>P1v2</pricingTier>  
-          <region>switzerlandnorth</region>  
+          <region>eastus</region>  
           <runtime> 
             <os>Windows</os>  
             <javaVersion>Java 17</javaVersion>  
