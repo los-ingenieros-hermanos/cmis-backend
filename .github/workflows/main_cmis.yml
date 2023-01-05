@@ -12,6 +12,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    environment:
+      name:'Production'
 
     steps:
       - uses: actions/checkout@v2
@@ -38,6 +40,10 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
+      - name: Set environment variables
+        env:
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       - name: Download artifact from build job
         uses: actions/download-artifact@v2
         with:
@@ -51,3 +57,5 @@ jobs:
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_964279C7E4374595AA725DB1FE054B3E }}
           package: '*.jar'
+          db_username = ${{ secrets.USERNAME }}
+          db_password = ${{ secrets.DB_PASSWORD }}
