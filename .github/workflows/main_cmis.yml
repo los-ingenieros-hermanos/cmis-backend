@@ -14,6 +14,9 @@ env:
   DB_USERNAME: ${{ secrets.DB_USERNAME }}
 
 jobs:
+  env: 
+    DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+    DB_USERNAME: ${{ secrets.DB_USERNAME }}
   build:
     runs-on: windows-latest
 
