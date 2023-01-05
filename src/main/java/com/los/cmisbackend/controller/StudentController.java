@@ -112,6 +112,33 @@ public class StudentController {
         if(studentsRequest.getBanner() != null)
             student.setBanner(studentsRequest.getBanner());
 
+        if(studentsRequest.getFirstName() != null) {
+            User user = student.getUser();
+            user.setFirstName(studentsRequest.getFirstName());
+            student.setUser(user);
+            userRepository.save(user);
+        }
+
+        if(studentsRequest.getLastName() != null) {
+            User user = student.getUser();
+            user.setLastName(studentsRequest.getLastName());
+            student.setUser(user);
+            userRepository.save(user);
+        }
+
+
+        if(studentsRequest.getGithub() != null)
+            student.setGithub(studentsRequest.getGithub());
+
+        if(studentsRequest.getLinkedin() != null)
+            student.setLinkedin(studentsRequest.getLinkedin());
+
+        if(studentsRequest.getTwitter() != null)
+            student.setTwitter(studentsRequest.getTwitter());
+
+        if(studentsRequest.getInstagram() != null)
+            student.setInstagram(studentsRequest.getInstagram());
+
         return new ResponseEntity<>(studentRepository.save(student), HttpStatus.OK);
     }
 
