@@ -87,6 +87,14 @@ public class EventController {
             if (eventId != null) {
                 Event _event = eventRepository.findById(eventId)
                         .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
+                Set<Student> students = _event.getAttendants();
+                if (!students.contains(student)) {
+
+                    students.add(student);
+                    _event.setAttendants(students);
+                    _event.setAttendantsNum(students.size());
+                    return eventRepository.save(_event);
+                }
                 student.addEvent(_event);
                 studentRepository.save(student);
                 return _event;
@@ -130,5 +138,18 @@ public class EventController {
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Post with event id = " + id));
         // return post
         return new ResponseEntity<>(post, HttpStatus.OK);
+    }
+
+    // check if student is attended event
+    @GetMapping("/students/{studentId}/events/{eventId}/isAttended")
+    public ResponseEntity<Boolean> isAttendedEvent(@PathVariable(value = "studentId") Long studentId,
+                                                   @PathVariable(value = "eventId") Long eventId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
+
+        return new ResponseEntity<>(student.getEvents().contains(event), HttpStatus.OK);
     }
 }

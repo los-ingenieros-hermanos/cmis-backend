@@ -32,6 +32,8 @@ public class Event {
     @JsonIgnore
     private Set<Student> attendants = new HashSet<>();
 
+    @Column(name="attendant_num")
+    private Integer attendantsNum = Integer.valueOf(0);
 
     public Event() {
 
@@ -78,6 +80,14 @@ public class Event {
     public void removeAttendant(Student student) {
         attendants.remove(student);
         student.getEvents().remove(this);
+    }
+
+    public Integer getAttendantsNum() {
+        return attendantsNum;
+    }
+
+    public void setAttendantsNum(Integer attendantsNum) {
+        this.attendantsNum = attendantsNum;
     }
 
     @Override
