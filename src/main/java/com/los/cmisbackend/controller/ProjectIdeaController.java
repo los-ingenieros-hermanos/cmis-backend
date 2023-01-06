@@ -4,6 +4,7 @@ import com.los.cmisbackend.dao.ProjectIdeaRepository;
 import com.los.cmisbackend.dao.StudentRepository;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.ProjectIdea;
+import com.los.cmisbackend.entity.Student;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -140,5 +143,128 @@ public class ProjectIdeaController {
         Pageable pageable = PageRequest.of(page, size);
         Page<ProjectIdea> projectIdeas = projectIdeaRepository.findProjectIdeaByTitleContainingOrTextContaining(search, search, pageable);
         return ResponseEntity.ok(projectIdeas.getContent());
+    }
+
+    // student likes a project idea
+    @PostMapping("/students/{studentId}/projectidea/{projectIdeaId}/like")
+    public ResponseEntity<ProjectIdea> likeProjectIdea(@PathVariable(value = "studentId") Long studentId,
+                                         @PathVariable(value = "projectIdeaId") Long projectIdeaId) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | userDetails.getId().equals(studentId)))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found project idea with id = " + projectIdeaId));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
+
+        if (projectIdea.getLikes().contains(student)) {
+            student.getLikedProjectIdeas().remove(projectIdea);
+            projectIdea.getLikes().remove(student);
+            projectIdea.setLikeNum(projectIdea.getLikeNum().intValue() - 1);
+        } else {
+            student.getLikedProjectIdeas().add(projectIdea);
+            projectIdea.getLikes().add(student);
+            projectIdea.setLikeNum(projectIdea.getLikeNum().intValue() + 1);
+        }
+
+        studentRepository.save(student);
+        ProjectIdea updatedProjectIdea = projectIdeaRepository.save(projectIdea);
+        return new ResponseEntity<>(updatedProjectIdea, HttpStatus.OK);
+    }
+
+    // students bookmarks a project idea
+    @PostMapping("/students/{studentId}/bookMarkedProjectIdeas")
+    public ResponseEntity<ProjectIdea> addBookmarkedProjectIdea(@PathVariable(value = "studentId") Long studentId,
+                                                  @RequestBody ProjectIdea projectIdeaRequest) {
+
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(studentId))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        ProjectIdea projectIdea = studentRepository.findById(studentId).map(student -> {
+            Long postId = projectIdeaRequest.getId();
+
+            // post is existed
+            if (postId != null) {
+                ProjectIdea _projectIdea = projectIdeaRepository.findById(postId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Not found Project Idea with id = " + postId));
+                Set<ProjectIdea> bookMarkedProjectIdeas = student.getBookmarkedProjectIdeas();
+                if (!bookMarkedProjectIdeas.contains(_projectIdea)) {
+                    bookMarkedProjectIdeas.add(_projectIdea);
+                    student.setBookmarkedProjectIdeas(bookMarkedProjectIdeas);
+                }
+                studentRepository.save(student);
+                return _projectIdea;
+            }
+            throw new ResourceNotFoundException("Post does not exists");
+        }).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        return new ResponseEntity<>(projectIdea, HttpStatus.OK);
+    }
+
+    // get all bookmarked project ideas of a student
+    @GetMapping("/students/{studentId}/bookMarkedProjectIdeas")
+    public ResponseEntity<List<ProjectIdea>> getBookmarkedProjectIdeas(@PathVariable(value = "studentId") Long studentId,
+                                                                      @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                      @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if (!(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(studentId))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProjectIdea> projectIdeas = projectIdeaRepository.findAllByBookMarkedBy(studentId, pageable);
+
+        List<ProjectIdea> _projectIdeas = projectIdeas.getNumberOfElements() == 0 ? Collections.emptyList() : projectIdeas.getContent();
+
+        return new ResponseEntity<>(_projectIdeas, HttpStatus.OK);
+    }
+
+    // delete a bookmarked project idea of a student
+    @DeleteMapping("/students/{studentId}/bookmarkedProjectIdeas/{projectIdeaId}")
+    public ResponseEntity<HttpStatus> deletePostFromStudent(@PathVariable(value = "studentId") Long studentId,
+                                                            @PathVariable(value = "projectIdeaId") Long projectIdeaId) {
+        // check authentication
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        if ( !(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                | (userDetails.getId().equals(studentId))))
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Project Idea with id = " + projectIdeaId));
+        Set<ProjectIdea> bookMarkedProjectIdeas = student.getBookmarkedProjectIdeas();
+        if (bookMarkedProjectIdeas.contains(projectIdea)) {
+            bookMarkedProjectIdeas.remove(projectIdea);
+            student.setBookmarkedProjectIdeas(bookMarkedProjectIdeas);
+            studentRepository.save(student);
+        }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // get all project ideas sorted by like number
+    @GetMapping("/projectIdeas/sortedByLikeNum")
+    public ResponseEntity<List<ProjectIdea>> getProjectIdeasSortedByLikeNum(@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                               @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<ProjectIdea> projectIdeas = projectIdeaRepository.findAllByOrderByLikeNumDesc(pageable);
+
+            List<ProjectIdea> _projectIdeas = projectIdeas.getNumberOfElements() == 0 ? Collections.emptyList() : projectIdeas.getContent();
+
+            return new ResponseEntity<>(_projectIdeas, HttpStatus.OK);
     }
 }

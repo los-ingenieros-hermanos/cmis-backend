@@ -126,6 +126,8 @@ public class StudentController {
             userRepository.save(user);
         }
 
+        if(studentsRequest.getInfo() != null)
+            student.setInfo(studentsRequest.getInfo());
 
         if(studentsRequest.getGithub() != null)
             student.setGithub(studentsRequest.getGithub());

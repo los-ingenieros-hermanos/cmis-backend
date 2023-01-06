@@ -1,9 +1,12 @@
 package com.los.cmisbackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "project_idea")
@@ -28,6 +31,27 @@ public class ProjectIdea {
     @JoinColumn(name="student_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Student student;
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "likedProjectIdeas")
+    @JsonIgnore
+    private Set<Student> likes = new HashSet<>();
+
+    @Column(name="like_num")
+    private Integer likeNum = Integer.valueOf(0);
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            },
+            mappedBy = "bookmarkedProjectIdeas")
+    @JsonIgnore
+    private Set<Student> bookMarkedBy = new HashSet<>();
 
     // no arg constructor
     public ProjectIdea() {
@@ -80,5 +104,21 @@ public class ProjectIdea {
 
     public void setStudent(Student student) {
         this.student = student;
+    }
+
+    public Set<Student> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(Set<Student> likes) {
+        this.likes = likes;
+    }
+
+    public Integer getLikeNum() {
+        return likeNum;
+    }
+
+    public void setLikeNum(Integer likeNum) {
+        this.likeNum = likeNum;
     }
 }
