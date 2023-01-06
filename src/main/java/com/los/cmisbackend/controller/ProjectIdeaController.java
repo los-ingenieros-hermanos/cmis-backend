@@ -267,4 +267,31 @@ public class ProjectIdeaController {
 
             return new ResponseEntity<>(_projectIdeas, HttpStatus.OK);
     }
+
+    // is project idea is liked by a student
+    @GetMapping("/students/{studentId}/projectIdeas/{projectIdeaId}/isLiked")
+    public ResponseEntity<Boolean> isLiked(@PathVariable(value = "studentId") Long studentId,
+                                           @PathVariable(value = "projectIdeaId") Long projectIdeaId) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Project Idea with id = " + projectIdeaId));
+
+        return new ResponseEntity<>(student.getLikedProjectIdeas().contains(projectIdea), HttpStatus.OK);
+    }
+
+    // is project idea is bookmarked by a student
+    @GetMapping("/students/{studentId}/projectIdeas/{projectIdeaId}/isBookmarked")
+    public ResponseEntity<Boolean> isBookmarked(@PathVariable(value = "studentId") Long studentId,
+                                                @PathVariable(value = "projectIdeaId") Long projectIdeaId) {
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+        ProjectIdea projectIdea = projectIdeaRepository.findById(projectIdeaId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Project Idea with id = " + projectIdeaId));
+
+        return new ResponseEntity<>(student.getBookmarkedProjectIdeas().contains(projectIdea), HttpStatus.OK);
+    }
+
 }

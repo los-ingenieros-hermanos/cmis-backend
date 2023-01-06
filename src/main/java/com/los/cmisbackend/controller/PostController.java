@@ -458,4 +458,32 @@ public class PostController {
 
         return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
+
+    // is post liked by student
+    @GetMapping("/posts/{postId}/isLikedByStudent/{studentId}")
+    public ResponseEntity<Boolean> isPostLikedByStudent(@PathVariable(value = "postId") Long postId,
+                                                       @PathVariable(value = "studentId") Long studentId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Post with id = " + postId));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        return new ResponseEntity<>(post.getLikes().contains(student), HttpStatus.OK);
+    }
+
+    // is post is bookmarked by student
+    @GetMapping("/posts/{postId}/isBookmarkedByStudent/{studentId}")
+    public ResponseEntity<Boolean> isPostBookmarkedByStudent(@PathVariable(value = "postId") Long postId,
+                                                       @PathVariable(value = "studentId") Long studentId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Post with id = " + postId));
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        return new ResponseEntity<>(post.getStudents().contains(student), HttpStatus.OK);
+    }
 }
