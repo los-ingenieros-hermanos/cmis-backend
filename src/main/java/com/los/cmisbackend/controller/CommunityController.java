@@ -144,7 +144,7 @@ public class CommunityController {
 
         if(communitiesRequest.getLinkedin() != null)
             community.setLinkedin(communitiesRequest.getLinkedin());
-        
+
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);
     }
 
