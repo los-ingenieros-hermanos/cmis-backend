@@ -224,7 +224,10 @@ public class ProjectIdeaController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<ProjectIdea> projectIdeas = projectIdeaRepository.findAllByBookMarkedBy(studentId, pageable);
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
+
+        Page<ProjectIdea> projectIdeas = projectIdeaRepository.findAllByBookMarkedBy(student, pageable);
 
         List<ProjectIdea> _projectIdeas = projectIdeas.getNumberOfElements() == 0 ? Collections.emptyList() : projectIdeas.getContent();
 
