@@ -43,6 +43,26 @@ public class Student {
             cascade = {
                     CascadeType.PERSIST,
                     CascadeType.MERGE
+            })
+    @JoinTable(name = "liked_project_idea_student",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "project_idea_id") })
+    private Set<ProjectIdea> likedProjectIdeas = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
+            })
+    @JoinTable(name = "bookmarkedProjectIdea_student",
+            joinColumns = { @JoinColumn(name = "student_id") },
+            inverseJoinColumns = { @JoinColumn(name = "project_idea_id") })
+    private Set<ProjectIdea> bookmarkedProjectIdeas = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+            cascade = {
+                    CascadeType.PERSIST,
+                    CascadeType.MERGE
             },
             mappedBy = "followers")
     @JsonIgnore
@@ -106,6 +126,9 @@ public class Student {
 
     @Column(name="twitter")
     private String twitter;
+
+    @Column(name="info", length = 1000)
+    private String info;
 
     public Student () {
 
@@ -307,6 +330,30 @@ public class Student {
 
     public void setBanner(String banner) {
         this.banner = banner;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+
+    public Set<ProjectIdea> getLikedProjectIdeas() {
+        return likedProjectIdeas;
+    }
+
+    public void setLikedProjectIdeas(Set<ProjectIdea> likedProjectIdeas) {
+        this.likedProjectIdeas = likedProjectIdeas;
+    }
+
+    public Set<ProjectIdea> getBookmarkedProjectIdeas() {
+        return bookmarkedProjectIdeas;
+    }
+
+    public void setBookmarkedProjectIdeas(Set<ProjectIdea> bookmarkedProjectIdeas) {
+        this.bookmarkedProjectIdeas = bookmarkedProjectIdeas;
     }
 
     @Override

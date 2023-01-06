@@ -20,7 +20,7 @@ public class Community {
 	@JoinColumn(name= "user_id")
 	private User user;
 
-	@Column(name="info", length = 120)
+	@Column(name="info", length = 1000)
 	private String info;
 
 	@ManyToMany(fetch = FetchType.LAZY,
