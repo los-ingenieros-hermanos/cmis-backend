@@ -1,6 +1,8 @@
 package com.los.cmisbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.los.cmisbackend.util.DefaultImages;
+
 import javax.persistence.*;
 
 import java.util.HashSet;
@@ -70,7 +72,7 @@ public class Student {
     
 	@Lob
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
-    private String image;
+    private String image = DefaultImages.DEFAULT_STUDENT;
 
     @Lob
     @Column(name = "banner", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)

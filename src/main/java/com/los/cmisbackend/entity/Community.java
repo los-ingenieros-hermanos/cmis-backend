@@ -1,6 +1,7 @@
 package com.los.cmisbackend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.los.cmisbackend.util.DefaultImages;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -42,11 +43,11 @@ public class Community {
 
 	@Lob
 	@Column(name = "image", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
-    private String image;
+    private String image = DefaultImages.DEFAULT_COMMUNITY;
 
 	@Lob
 	@Column(name = "banner", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
-    private String banner;
+    private String banner = DefaultImages.DEFAULT_BANNER;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "community_tag",
