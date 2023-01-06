@@ -222,6 +222,12 @@ public class PostController {
                 date.setDay(event.getDate().getDay());
                 date.setMonth(event.getDate().getMonth());
                 date.setYear(event.getDate().getYear());
+                if (event.getDate().getHour() != null) {
+                    date.setHour(event.getDate().getHour());
+                }
+                if (event.getDate().getMinute() != null) {
+                    date.setMinute(event.getDate().getMinute());
+                }
                 date = dateRepository.save(date);
                 event.setDate(date);
 
@@ -236,6 +242,14 @@ public class PostController {
             date.setDay(postRequest.getDate().getDay());
             date.setMonth(postRequest.getDate().getMonth());
             date.setYear(postRequest.getDate().getYear());
+            if(postRequest.getDate().getHour() != null) {
+                date.setHour(postRequest.getDate().getHour());
+            }
+
+            if(postRequest.getDate().getMinute() != null) {
+                date.setMinute(postRequest.getDate().getMinute());
+            }
+
             date = dateRepository.save(date);
             postRequest.setDate(date);
 
