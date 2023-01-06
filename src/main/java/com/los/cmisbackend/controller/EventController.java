@@ -12,6 +12,7 @@ import com.los.cmisbackend.util.CmisConstants;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
@@ -40,35 +42,31 @@ public class EventController {
     private PostRepository postRepository;
 
     @GetMapping("/students/{id}/events")
-    public ResponseEntity<Set<Event>> getAllEventsByStudentId(@PathVariable(value = "id") Long id,
-    @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
-    @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    public ResponseEntity<Set<Event>> getAllEventsByStudentId(@PathVariable(value = "id") Long id)
     {
-
-        studentRepository.findById(id)
+        Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
 
-        Pageable pageable = PageRequest.of(page, size);
+        //System.out.println(student.getEvents());
+        Set<Event> events = student.getEvents();
 
-        Page<Event> eventsPage = eventRepository.findEventsById(id, pageable);
-        Set<Event> events = eventsPage.getNumberOfElements() == 0 ? Collections.emptySet() 
-            : eventsPage.toSet();
-            
         return new ResponseEntity<>(events, HttpStatus.OK);
     }
 
-    @GetMapping("/students/{id}/events/{eventId}")
-    public ResponseEntity<Event> getEventByStudentId(@PathVariable(value = "id") Long id,
-                                                     @PathVariable(value = "eventId") Long eventId) {
-        Student student = studentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
-        // get event
-        Event event = student.getEvents().stream()
-                .filter(e -> e.getId().equals(eventId))
-                .findFirst()
+    @GetMapping("events/{eventId}")
+    public ResponseEntity<Event> getEventByStudentId(@PathVariable(value = "eventId") Long eventId) {
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
-        // return event
         return new ResponseEntity<>(event, HttpStatus.OK);
+    }
+
+    @GetMapping("/events")
+    public ResponseEntity<List<Event>> getAllEvents(@RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "10") int size) {
+        Pageable paging = PageRequest.of(page, size);
+        Page<Event> events = eventRepository.findAll(paging);
+        List<Event> eventList = events.getNumberOfElements() == 0 ? Collections.emptyList() : events.getContent();
+        return new ResponseEntity<>(eventList, HttpStatus.OK);
     }
 
     @PostMapping("/students/{id}/events")
@@ -80,27 +78,20 @@ public class EventController {
                 | (userDetails.getId().equals(id))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        Event event = studentRepository.findById(id).map(student -> {
-            Long eventId = eventRequest.getId();
+        Event event = eventRepository.findById(eventRequest.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventRequest.getId()));
 
-            // event is existed
-            if (eventId != null) {
-                Event _event = eventRepository.findById(eventId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
-                Set<Student> students = _event.getAttendants();
-                if (!students.contains(student)) {
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
 
-                    students.add(student);
-                    _event.setAttendants(students);
-                    _event.setAttendantsNum(students.size());
-                    return eventRepository.save(_event);
-                }
-                student.addEvent(_event);
-                studentRepository.save(student);
-                return _event;
-            }
-            throw new ResourceNotFoundException("Event does not exists.");
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
+        Set<Event> events = student.getEvents();
+
+        if (!events.contains(event)) {
+            events.add(event);
+            event.setAttendantsNum(event.getAttendantsNum() + 1);
+            student.setEvents(events);
+            studentRepository.save(student);
+        }
 
         return new ResponseEntity<>(event, HttpStatus.CREATED);
     }
