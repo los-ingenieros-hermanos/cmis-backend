@@ -76,7 +76,7 @@ public class Student {
 
     @Lob
     @Column(name = "banner", nullable = true, columnDefinition = "MEDIUMBLOB", length = Integer.MAX_VALUE)
-    private String banner;
+    private String banner = DefaultImages.DEFAULT_BANNER;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "student_tag",
