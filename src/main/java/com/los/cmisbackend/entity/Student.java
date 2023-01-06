@@ -29,6 +29,7 @@ public class Student {
     @JoinTable(name = "bookmarkedPost_student",
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "post_id") })
+    @JsonIgnore
     private Set<Post> bookmarkedPosts = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
@@ -39,6 +40,7 @@ public class Student {
     @JoinTable(name = "liked_post_student",
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "post_id") })
+    @JsonIgnore
     private Set<Post> likedPosts = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
@@ -49,6 +51,7 @@ public class Student {
     @JoinTable(name = "liked_project_idea_student",
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "project_idea_id") })
+    @JsonIgnore
     private Set<ProjectIdea> likedProjectIdeas = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
@@ -59,6 +62,7 @@ public class Student {
     @JoinTable(name = "bookmarkedProjectIdea_student",
             joinColumns = { @JoinColumn(name = "student_id") },
             inverseJoinColumns = { @JoinColumn(name = "project_idea_id") })
+    @JsonIgnore
     private Set<ProjectIdea> bookmarkedProjectIdeas = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
