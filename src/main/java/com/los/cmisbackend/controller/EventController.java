@@ -106,16 +106,19 @@ public class EventController {
                 | (userDetails.getId().equals(id))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        Event event = studentRepository.findById(id).map(student -> {
-            Event _event = student.getEvents().stream()
-                    .filter(e -> e.getId().equals(eventId))
-                    .findFirst()
-                    .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
-            student.removeEvent(_event);
-            studentRepository.save(student);
-            return _event;
-        }).orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
+        Student student = studentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + id));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
 
+        Set<Event> events = student.getEvents();
+
+        if (events.contains(event)) {
+            events.remove(event);
+            event.setAttendantsNum(event.getAttendantsNum() - 1);
+            student.setEvents(events);
+            studentRepository.save(student);
+        }
         return new ResponseEntity<>(event, HttpStatus.OK);
     }
 
