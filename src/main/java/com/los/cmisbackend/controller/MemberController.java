@@ -59,6 +59,8 @@ public class MemberController {
 		@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
 		@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
 {
+	communityRepository. findById(communityId)
+		.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
 
 	Pageable pageable = PageRequest.of(page, size);
 
@@ -75,7 +77,17 @@ public class MemberController {
 															@PathVariable(value = "studentId") Long studentId) 
 	{
 
+		communityRepository. findById(communityId)
+			.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+
+		studentRepository. findById(studentId)
+			.orElseThrow(() -> new ResourceNotFoundException("Student not found for this id :: " + studentId));
+		
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+
+		if(member == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 
         return new ResponseEntity<>(member, HttpStatus.OK);
     }
@@ -84,6 +96,9 @@ public class MemberController {
 	@GetMapping("/communities/{communityId}/authorizedMembers")
 	public ResponseEntity<Set<Member>> getAuthorizedMembersByCommunityId(@PathVariable(value = "communityId") Long communityId) {
 		
+		communityRepository. findById(communityId)
+			.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+
 		Set<Member> authorizedMembers = new HashSet<Member>(); 
 		for (Member member : memberRepository.findByCommunityId(communityId)) {
 			Set<String>	authorizations = member.getAuthorizations();
@@ -95,8 +110,8 @@ public class MemberController {
 		return new ResponseEntity<>(authorizedMembers, HttpStatus.OK);
 	}
 
-	@GetMapping("/communities/{communityId}/isAuthorized/{studentId}")
-	public ResponseEntity<Boolean> getAuthorizedMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, 
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")	
+	public ResponseEntity<Boolean> isAuthorized(@PathVariable(value = "communityId") Long communityId, 
 																	@PathVariable(value = "studentId") Long studentId) 
 	{
 
@@ -126,15 +141,19 @@ public class MemberController {
 	public ResponseEntity<HttpStatus> deleteMember( @PathVariable(value = "communityId") Long communityId, 
 												@PathVariable(value = "studentId") Long studentId) 
 	{
+		
+		Community community = communityRepository.findById(communityId
+		).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+
+		studentRepository. findById(studentId)
+			.orElseThrow(() -> new ResourceNotFoundException("Student not found for this id :: " + studentId));
 
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if(member == null) {
-			throw new ResourceNotFoundException("Member not found for this id :: " + studentId);
+			throw new ResourceNotFoundException("Member not found for this student id :: " + studentId);
 		}
-		
-		Community community = communityRepository.findById(communityId
-				).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+	
 
 		Integer memberCount = community.getMemberCount();
         community.setMemberCount(memberCount -1);
@@ -147,12 +166,12 @@ public class MemberController {
 	@DeleteMapping("/communities/{communityId}/members")
 	public ResponseEntity<HttpStatus> deleteAllMembersOfTheCommunity(@PathVariable (value = "communityId") Long communityId)
 	{
+		Community community = communityRepository.findById(communityId
+				).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
 
 		Set<Member> members = memberRepository.findByCommunityId(communityId);
 		memberRepository.deleteAll(members);
 
-		Community community = communityRepository.findById(communityId
-				).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
 		community.setMemberCount(0);
 
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
@@ -164,10 +183,16 @@ public class MemberController {
 												@PathVariable(value = "studentId") Long studentId,
 												@RequestBody  Set<String> authorizations) 
 	{
+		communityRepository. findById(communityId)
+			.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+
+		studentRepository. findById(studentId)
+			.orElseThrow(() -> new ResourceNotFoundException("Student not found for this id :: " + studentId));
+		
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (member == null) {
-			throw new ResourceNotFoundException("Member not found for this id :: " + studentId);
+			throw new ResourceNotFoundException("Member not found for this student id :: " + studentId);
 		}
 
 		member.setAuthorizations(authorizations);
@@ -181,6 +206,8 @@ public class MemberController {
 		@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
 		@RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) 
 	{
+		communityRepository. findById(communityId)
+			.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
 
 		Pageable pageable = PageRequest.of(page, size);
 
@@ -203,6 +230,9 @@ public class MemberController {
 		communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
+		studentRepository.findById(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
@@ -213,14 +243,17 @@ public class MemberController {
 	}
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
-	@PutMapping("/communities/{communityId}/memberApplications/{applicantId}/reject")
+	@PutMapping("/communities/{communityId}/memberApplications/{studentId}/reject")
 	public ResponseEntity<Student> rejectMemberToCommunity(@PathVariable(value = "communityId") Long communityId, 
-														@PathVariable(value = "applicantId") Long applicantId)
+														@PathVariable(value = "studentId") Long studentId)
 	{
 		communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
-		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, applicantId);
+		studentRepository.findById(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 		if (memberApplication == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
@@ -235,17 +268,18 @@ public class MemberController {
 													@PathVariable(value = "studentId") Long studentId,
 													@RequestBody(required = false) Set<String> authorizations)
 	{	
+		
+		Community community = communityRepository.findById(communityId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+		Student student = studentRepository.findById(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+		
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-
-		Student student = studentRepository.findById(studentId)
-				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
-
-		Community community = communityRepository.findById(communityId
-				).orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
 		if (member != null) {
@@ -272,17 +306,16 @@ public class MemberController {
 											@PathVariable(value = "studentId") Long studentId, 
 											@RequestBody String message)
 	{
-
-		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
-		if (memberApplication != null) {
-			memberApplicationRepository.delete(memberApplication);
-		}
-
 		Community community = communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
 
 		Student memberApplicant = studentRepository.findById(studentId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found student with id = " + studentId));
+		
+		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		if (memberApplication != null) {
+			memberApplicationRepository.delete(memberApplication);
+		}
 
 		// create member application and add to community member applicant list
 		memberApplication = new MemberApplication(memberApplicant, community, message);
@@ -296,6 +329,12 @@ public class MemberController {
 	public ResponseEntity<Student> deleteMemberApplication(@PathVariable(value = "communityId") Long communityId, 
 													@PathVariable(value = "studentId") Long studentId)
 	{
+		communityRepository.findById(communityId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+		
+		studentRepository.findById(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+		
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 		if (memberApplication == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
