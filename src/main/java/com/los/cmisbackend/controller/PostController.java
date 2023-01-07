@@ -511,7 +511,10 @@ public class PostController {
     {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Post> posts = postRepository.findAllByVisibilityAndCommunity("private", communityId, pageable);
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        Page<Post> posts = postRepository.findAllByVisibilityAndCommunity("private", community, pageable);
 
         List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
 

@@ -313,6 +313,4 @@ public class ProjectIdeaController {
 
         return new ResponseEntity<>(__students, HttpStatus.OK);
     }
-
-    // get a sorted bookmarked project ideas and po
 }

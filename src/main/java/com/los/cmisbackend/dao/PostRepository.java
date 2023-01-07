@@ -1,5 +1,6 @@
 package com.los.cmisbackend.dao;
 
+import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
 
@@ -31,6 +32,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findAllByOrderByTitleDesc(Pageable pageable);
     Page<Post> findAllByOrderByLikeNumDesc(Pageable pageable);
     Page<Post> findAllByVisibilityContaining(String visibility, Pageable pageable);
-    Page<Post> findAllByVisibilityAndCommunity(String visibility, Long id, Pageable pageable);
+    Page<Post> findAllByVisibilityAndCommunity(String visibility, Community community, Pageable pageable);
     Page<Post> findAllByVisibilityAndCommunityIn(String visibility, List<Long> ids, Pageable pageable);
 }
