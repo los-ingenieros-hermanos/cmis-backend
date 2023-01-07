@@ -9,6 +9,7 @@ import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -19,10 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -297,4 +295,24 @@ public class ProjectIdeaController {
         return new ResponseEntity<>(student.getBookmarkedProjectIdeas().contains(projectIdea), HttpStatus.OK);
     }
 
+    // get all students which have project idea
+    @GetMapping("/students/withProjectIdea")
+    public ResponseEntity<List<Student>> getStudentsWithProjectIdea(@RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+                                                                   @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<ProjectIdea> projectIdeas = projectIdeaRepository.findAll();
+
+        List<Student> students = new ArrayList<>();
+
+        for (ProjectIdea projectIdea : projectIdeas) {
+            students.add(projectIdea.getStudent());
+        }
+
+        Page<Student> _students = new PageImpl<>(students, pageable, students.size());
+        List<Student> __students = _students.getNumberOfElements() == 0 ? Collections.emptyList() : _students.getContent();
+
+        return new ResponseEntity<>(__students, HttpStatus.OK);
+    }
+
+    // get a sorted bookmarked project ideas and po
 }
