@@ -180,4 +180,28 @@ public class EventController {
         }
         return new ResponseEntity<>(eventDetails, HttpStatus.OK);
     }
+
+    // get all eventDetails of a student
+    @GetMapping("/students/{studentId}/allEventDetails")
+    public ResponseEntity<List<Post>> getAllEventDetailsByStudentId(@PathVariable(value = "studentId") Long studentId) {
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        List<Event> allEvents = eventRepository.findAll();
+        List<Event> studentEvents = new ArrayList<>();
+        for (Event event : allEvents) {
+            if (event.getAttendants().contains(student)) {
+                studentEvents.add(event);
+            }
+        }
+
+        List<Post> posts = postRepository.findAll();
+        List<Post> eventDetails = new ArrayList<>();
+        for (Post post : posts) {
+            if (!post.getEvent().isEmpty() && studentEvents.contains(post.getEvent())) {
+                eventDetails.add(post);
+            }
+        }
+        return new ResponseEntity<>(eventDetails, HttpStatus.OK);
+    }
 }
