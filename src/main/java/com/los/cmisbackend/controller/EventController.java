@@ -198,7 +198,7 @@ public class EventController {
         List<Post> posts = postRepository.findAll();
         List<Post> eventDetails = new ArrayList<>();
         for (Post post : posts) {
-            if (!post.getEvent().isEmpty() && studentEvents.contains(post.getEvent())) {
+            if (!post.getEvent().isEmpty() && studentEvents.contains(post.getEvent().get(0))) {
                 eventDetails.add(post);
             }
         }
