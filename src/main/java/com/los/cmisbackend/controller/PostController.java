@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -499,5 +500,48 @@ public class PostController {
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
 
         return new ResponseEntity<>(post.getStudents().contains(student), HttpStatus.OK);
+    }
+
+    // get all private posts of a community
+    @GetMapping("/posts/communities/{communityId}/private")
+    public ResponseEntity<List<Post>> getAllPrivatePostsOfCommunity(
+            @PathVariable(value = "communityId") Long communityId,
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Post> posts = postRepository.findAllByVisibilityAndCommunity("private", communityId, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
+    // get all private posts of a communities which a student is member of
+    @GetMapping("/posts/{studentId}/private")
+    public ResponseEntity<List<Post>> getAllPrivatePostsOfCommunitiesStudentIsMemberOf(
+            @PathVariable(value = "studentId") Long studentId,
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Student with id = " + studentId));
+
+        Set<Member> memberOfSet = student.getMemberOf();
+
+        List<Long> communityIds = new ArrayList<>();
+
+        for (Member member : memberOfSet) {
+            communityIds.add(member.getCommunity().getId());
+        }
+
+        Page<Post> posts = postRepository.findAllByVisibilityAndCommunityIn("private", communityIds, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 }
