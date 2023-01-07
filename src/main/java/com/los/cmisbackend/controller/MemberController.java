@@ -95,13 +95,38 @@ public class MemberController {
 		return new ResponseEntity<>(authorizedMembers, HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")	
+	@GetMapping("/communities/{communityId}/isAuthorized/{studentId}/")
+	public ResponseEntity<Boolean> getAuthorizedMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, 
+																	@PathVariable(value = "studentId") Long studentId) 
+	{
+
+		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+		Set<String>	authorizations = member.getAuthorizations();
+		if (authorizations.contains("ALL")) {
+			return new ResponseEntity<>(true, HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(false, HttpStatus.OK);
+		}
+	}
+
+
+	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")	
 	@DeleteMapping("/communities/{communityId}/members/{studentId}")
 	public ResponseEntity<HttpStatus> deleteMember( @PathVariable(value = "communityId") Long communityId, 
 												@PathVariable(value = "studentId") Long studentId) 
 	{
 
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+
+		if(member == null) {
+			throw new ResourceNotFoundException("Member not found for this id :: " + studentId);
+		}
+		
+		Community community = communityRepository.findById(communityId
+				).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+
+		Integer memberCount = community.getMemberCount();
+        community.setMemberCount(memberCount -1);
 		memberRepository.delete(member);
 
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -115,6 +140,10 @@ public class MemberController {
 		Set<Member> members = memberRepository.findByCommunityId(communityId);
 		memberRepository.deleteAll(members);
 
+		Community community = communityRepository.findById(communityId
+				).orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+		community.setMemberCount(0);
+
 		return new ResponseEntity<HttpStatus>(HttpStatus.NO_CONTENT);
 	}
 
@@ -126,9 +155,13 @@ public class MemberController {
 	{
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
+		if (member == null) {
+			throw new ResourceNotFoundException("Member not found for this id :: " + studentId);
+		}
+
 		member.setAuthorizations(authorizations);
 		final Member updatedMember = memberRepository.save(member);
-		return ResponseEntity.ok(updatedMember);
+		return new ResponseEntity<>(updatedMember, HttpStatus.OK);
 	}
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")	
@@ -162,7 +195,7 @@ public class MemberController {
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		return new ResponseEntity<>(memberApplication, HttpStatus.OK);
@@ -182,7 +215,7 @@ public class MemberController {
 		}
 
 		memberApplicationRepository.delete(memberApplication);
-		return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id)")
@@ -216,6 +249,8 @@ public class MemberController {
 		member = new Member(student, community, authorizations);
 		memberRepository.save(member);
 		community.addMember(member);
+		Integer memberCount = community.getMemberCount();
+        community.setMemberCount(memberCount + 1);
 		memberApplicationRepository.delete(memberApplication);
 		return new ResponseEntity<>(student, HttpStatus.OK);
 	}
@@ -229,7 +264,7 @@ public class MemberController {
 
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 		if (memberApplication != null) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			memberApplicationRepository.delete(memberApplication);
 		}
 
 		Community community = communityRepository.findById(communityId)
@@ -256,7 +291,7 @@ public class MemberController {
 		}
 
 		memberApplicationRepository.delete(memberApplication);
-		return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
 	@PreAuthorize("hasRole('ADMIN')")
@@ -275,9 +310,12 @@ public class MemberController {
 		if (member != null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}	
+
 		member = new Member(student, community, authorizations);
 		memberRepository.save(member);
 		community.addMember(member);
+		Integer memberCount = community.getMemberCount();
+        community.setMemberCount(memberCount + 1);
 		communityRepository.save(community);
 		return new ResponseEntity<>(member, HttpStatus.OK);
 	}

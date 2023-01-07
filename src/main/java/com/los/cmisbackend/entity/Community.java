@@ -90,6 +90,9 @@ public class Community {
 	@Column(name="twitter")
 	private String twitter;
 
+	@Column(name="application_criteria", length = 600)
+	private String applicationCriteria = "No criteria";
+
 	public Community() {
 		this.type = "community";
 	}
@@ -215,12 +218,10 @@ public class Community {
 	}
 
 	public void addMember(Member member) {
-		memberCount++;
 		members.add(member);
 	}
 
 	public void removeMember(Member member) {
-		memberCount--;
 		members.remove(member);
 	}
 
@@ -262,6 +263,14 @@ public class Community {
 
 	public void setTwitter(String twitter) {
 		this.twitter = twitter;
+	}
+
+	public String getApplicationCriteria() {
+		return applicationCriteria;
+	}
+
+	public void setApplicationCriteria(String applicationCriteria) {
+		this.applicationCriteria = applicationCriteria;
 	}
 
 	public Set<MemberApplication> getMemberApplications() {

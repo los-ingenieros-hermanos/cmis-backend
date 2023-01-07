@@ -144,6 +144,9 @@ public class CommunityController {
 
         if(communitiesRequest.getLinkedin() != null)
             community.setLinkedin(communitiesRequest.getLinkedin());
+        
+        if(communitiesRequest.getApplicationCriteria() != null)
+            community.setApplicationCriteria(communitiesRequest.getApplicationCriteria());
 
         return new ResponseEntity<>(communityRepository.save(community), HttpStatus.OK);
     }
