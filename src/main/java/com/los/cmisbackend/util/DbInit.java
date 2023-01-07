@@ -93,42 +93,42 @@ public class DbInit {
 			userRepository.save(user);
 		}
 
-		//add mangalCom as community if userRepository is empty
-		if(communityRepository.count() < 2)
-		{
-			for(int i = 0; i < 25; i++){
-				User user = new User("mangalCom", null, "mangal" + i + "@gtu.edu.tr",
-				"mangal" + i + "@gtu.edu.tr", encoder.encode("mangal123"));
-				Set<Role> roles = new HashSet<>();
-				Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				user.setRoles(roles);
-				roles.add(role);
-				Community community = new Community();
-				community.setUser(user);
+		// //add mangalCom as community if userRepository is empty
+		// if(communityRepository.count() < 2)
+		// {
+		// 	for(int i = 0; i < 15; i++){
+		// 		User user = new User("mangalCom" + i, null, "mangal" + i + "@gtu.edu.tr",
+		// 		"mangal" + i + "@gtu.edu.tr", encoder.encode("mangal123"));
+		// 		Set<Role> roles = new HashSet<>();
+		// 		Role role = roleRepository.findByName(ERole.ROLE_COMMUNITY)
+		// 			.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+		// 		user.setRoles(roles);
+		// 		roles.add(role);
+		// 		Community community = new Community();
+		// 		community.setUser(user);
 	
-				communityRepository.save(community);
-			}
+		// 		communityRepository.save(community);
+		// 	}
 
-		}
+		// }
 
-		//add Ayhan as student if student repository is empty
-		if(studentRepository.count() < 2)
-		{
-			for(int i = 0; i < 16; i++){
-				User user = new User("ayhan", null, "ayhan" + i + "@gtu.edu.tr",
-				"ayhan" + i + "@gtu.edu.tr", encoder.encode("ayhan123"));
-				Set<Role> roles = new HashSet<>();
-				Role role = roleRepository.findByName(ERole.ROLE_STUDENT)
-					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-				user.setRoles(roles);
-				roles.add(role);
-				Student student = new Student();
-				student.setUser(user);
+		// //add Ayhan as student if student repository is empty
+		// if(studentRepository.count() < 2)
+		// {
+		// 	for(int i = 0; i < 15; i++){
+		// 		User user = new User("ayhan" + i, "ayhanoglu" + i, "ayhan" + i + "@gtu.edu.tr",
+		// 		"ayhan" + i + "@gtu.edu.tr", encoder.encode("ayhan123"));
+		// 		Set<Role> roles = new HashSet<>();
+		// 		Role role = roleRepository.findByName(ERole.ROLE_STUDENT)
+		// 			.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+		// 		user.setRoles(roles);
+		// 		roles.add(role);
+		// 		Student student = new Student();
+		// 		student.setUser(user);
 	
-				studentRepository.save(student);
-			}
+		// 		studentRepository.save(student);
+		// 	}
 
-		}
+		// }
 	}
 }
