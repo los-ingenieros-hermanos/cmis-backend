@@ -302,13 +302,14 @@ public class ProjectIdeaController {
         Pageable pageable = PageRequest.of(page, size);
         List<ProjectIdea> projectIdeas = projectIdeaRepository.findAll();
 
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
 
         for (ProjectIdea projectIdea : projectIdeas) {
             students.add(projectIdea.getStudent());
         }
 
-        Page<Student> _students = new PageImpl<>(students, pageable, students.size());
+        List<Student> studentList = new ArrayList<>(students);
+        Page<Student> _students = new PageImpl<>(studentList, pageable, students.size());
         List<Student> __students = _students.getNumberOfElements() == 0 ? Collections.emptyList() : _students.getContent();
 
         return new ResponseEntity<>(__students, HttpStatus.OK);
