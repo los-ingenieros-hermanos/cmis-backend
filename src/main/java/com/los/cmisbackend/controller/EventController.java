@@ -1,9 +1,11 @@
 package com.los.cmisbackend.controller;
 
 
+import com.los.cmisbackend.dao.CommunityRepository;
 import com.los.cmisbackend.dao.EventRepository;
 import com.los.cmisbackend.dao.PostRepository;
 import com.los.cmisbackend.dao.StudentRepository;
+import com.los.cmisbackend.entity.Community;
 import com.los.cmisbackend.entity.Event;
 import com.los.cmisbackend.entity.Post;
 import com.los.cmisbackend.entity.Student;
@@ -41,6 +43,9 @@ public class EventController {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Autowired
+    private CommunityRepository communityRepository;
 
     @GetMapping("/students/{id}/events")
     public ResponseEntity<Set<Event>> getAllEventsByStudentId(@PathVariable(value = "id") Long id)
@@ -155,6 +160,21 @@ public class EventController {
         List<Post> eventDetails = new ArrayList<>();
         for (Post post : posts) {
             if (!post.getEvent().isEmpty()) {
+                eventDetails.add(post);
+            }
+        }
+        return new ResponseEntity<>(eventDetails, HttpStatus.OK);
+    }
+
+    // get all eventDetails of a community
+    @GetMapping("/communities/{communityId}/allEventDetails")
+    public ResponseEntity<List<Post>> getAllEventDetailsByCommunityId(@PathVariable(value = "communityId") Long communityId) {
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+        List<Post> posts = postRepository.findAll();
+        List<Post> eventDetails = new ArrayList<>();
+        for (Post post : posts) {
+            if (!post.getEvent().isEmpty() && post.getCommunity().equals(community)) {
                 eventDetails.add(post);
             }
         }
