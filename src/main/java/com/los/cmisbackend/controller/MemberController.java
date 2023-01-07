@@ -95,12 +95,23 @@ public class MemberController {
 		return new ResponseEntity<>(authorizedMembers, HttpStatus.OK);
 	}
 
-	@GetMapping("/communities/{communityId}/isAuthorized/{studentId}/")
+	@GetMapping("/communities/{communityId}/isAuthorized/{studentId}")
 	public ResponseEntity<Boolean> getAuthorizedMemberByCommunityId(@PathVariable(value = "communityId") Long communityId, 
 																	@PathVariable(value = "studentId") Long studentId) 
 	{
 
+		communityRepository. findById(communityId)
+			.orElseThrow(() -> new ResourceNotFoundException("Community not found for this id :: " + communityId));
+		
+		studentRepository. findById(studentId)
+			.orElseThrow(() -> new ResourceNotFoundException("Student not found for this id :: " + studentId));	
+		
 		Member member = memberRepository.findByCommunityIdAndStudentId(communityId, studentId);
+
+		if(member == null) {
+			return new ResponseEntity<>(false, HttpStatus.OK);
+		}
+
 		Set<String>	authorizations = member.getAuthorizations();
 		if (authorizations.contains("ALL")) {
 			return new ResponseEntity<>(true, HttpStatus.OK);
@@ -195,7 +206,7 @@ public class MemberController {
 		MemberApplication memberApplication = memberApplicationRepository.findByCommunityIdAndStudentId(communityId, studentId);
 
 		if (memberApplication == null) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		}
 
 		return new ResponseEntity<>(memberApplication, HttpStatus.OK);
