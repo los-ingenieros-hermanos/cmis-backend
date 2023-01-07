@@ -111,6 +111,7 @@ public class MemberController {
 	}
 
 	@PreAuthorize("hasRole('ADMIN') or @memberUtil.isAuthorized(#communityId, authentication.principal.id) or #studentId == authentication.principal.id")	
+	@GetMapping("/communities/{communityId}/isAuthorized/{studentId}")
 	public ResponseEntity<Boolean> isAuthorized(@PathVariable(value = "communityId") Long communityId, 
 																	@PathVariable(value = "studentId") Long studentId) 
 	{
