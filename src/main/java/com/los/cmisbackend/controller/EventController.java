@@ -23,6 +23,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -145,5 +146,18 @@ public class EventController {
                 .orElseThrow(() -> new ResourceNotFoundException("Not found Event with id = " + eventId));
 
         return new ResponseEntity<>(student.getEvents().contains(event), HttpStatus.OK);
+    }
+
+    // get all eventDetails
+    @GetMapping("/allEventDetails")
+    public ResponseEntity<List<Post>> getAllEventDetails() {
+        List<Post> posts = postRepository.findAll();
+        List<Post> eventDetails = new ArrayList<>();
+        for (Post post : posts) {
+            if (!post.getEvent().isEmpty()) {
+                eventDetails.add(post);
+            }
+        }
+        return new ResponseEntity<>(eventDetails, HttpStatus.OK);
     }
 }
