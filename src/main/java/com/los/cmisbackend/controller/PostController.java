@@ -2,6 +2,7 @@ package com.los.cmisbackend.controller;
 
 import com.los.cmisbackend.dao.*;
 import com.los.cmisbackend.entity.*;
+import com.los.cmisbackend.entity.Date;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import com.los.cmisbackend.util.CmisConstants;
 import com.los.cmisbackend.util.MemberUtil;
@@ -19,10 +20,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -535,13 +533,13 @@ public class PostController {
 
         Set<Member> memberOfSet = student.getMemberOf();
 
-        List<Long> communityIds = new ArrayList<>();
+        List<Community> communities = new ArrayList<>();
 
         for (Member member : memberOfSet) {
-            communityIds.add(member.getCommunity().getId());
+            communities.add(member.getCommunity());
         }
 
-        Page<Post> posts = postRepository.findAllByVisibilityAndCommunityIn("private", communityIds, pageable);
+        Page<Post> posts = postRepository.findAllByVisibilityAndCommunityIn("private", communities, pageable);
 
         List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
 
