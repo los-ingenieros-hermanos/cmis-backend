@@ -144,6 +144,7 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
+
         return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
     }
 }
