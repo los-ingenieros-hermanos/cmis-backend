@@ -72,7 +72,9 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt,
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(new JwtResponse(jwt,
                         userDetails.getId(),
                         userDetails.getFirstName(),
                         userDetails.getLastName(),
@@ -144,7 +146,8 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser() {
-
-        return ResponseEntity.ok(new MessageResponse("User logged out successfully!"));
+        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new MessageResponse("You've been signed out!"));
     }
 }
