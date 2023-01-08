@@ -92,6 +92,22 @@ public class PostController {
             s.removePost(post);
             studentRepository.save(s);
         }
+
+        Set<Student> students2 = post.getLikes();
+        for(Student s: students2) {
+            s.getLikedPosts().remove(post);
+            studentRepository.save(s);
+        }
+
+        List<Event> events = post.getEvent();
+        if(!events.isEmpty()) {
+            Event event = events.get(0);
+            Set<Student> attendants = event.getAttendants();
+            for(Student s: attendants) {
+                s.getEvents().remove(event);
+                studentRepository.save(s);
+            }
+        }
         postRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
