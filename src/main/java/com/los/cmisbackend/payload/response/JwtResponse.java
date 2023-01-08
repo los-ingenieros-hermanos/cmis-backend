@@ -11,8 +11,8 @@ public class JwtResponse {
     private String email;
     private List<String> roles;
 
-    public JwtResponse(String accessToken, Long id, String firstName, String lastName, String email, List<String> roles) {
-        this.token = accessToken;
+    public JwtResponse(String token, Long id, String firstName, String lastName, String email, List<String> roles) {
+        this.token = token;
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
