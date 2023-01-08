@@ -2,14 +2,17 @@ package com.los.cmisbackend.payload.response;
 
 import java.util.List;
 
-public class UserInfoResponse {
+public class JwtResponse {
     private Long id;
+    private String token;
+    private String type = "Bearer";
     private String firstName;
     private String lastName;
     private String email;
     private List<String> roles;
 
-    public UserInfoResponse(Long id, String firstName, String lastName, String email, List<String> roles) {
+    public JwtResponse(String accessToken, Long id, String firstName, String lastName, String email, List<String> roles) {
+        this.token = accessToken;
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -59,5 +62,25 @@ public class UserInfoResponse {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
     }
 }
