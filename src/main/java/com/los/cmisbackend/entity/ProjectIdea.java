@@ -121,4 +121,12 @@ public class ProjectIdea {
     public void setLikeNum(Integer likeNum) {
         this.likeNum = likeNum;
     }
+
+    public Set<Student> getBookMarkedBy() {
+        return bookMarkedBy;
+    }
+
+    public void setBookMarkedBy(Set<Student> bookMarkedBy) {
+        this.bookMarkedBy = bookMarkedBy;
+    }
 }

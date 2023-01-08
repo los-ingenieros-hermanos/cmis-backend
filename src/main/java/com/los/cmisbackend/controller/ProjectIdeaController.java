@@ -120,14 +120,24 @@ public class ProjectIdeaController {
 
         ProjectIdea projectIdea = projectIdeaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Not found project idea with id = " + id));
+
         Long studentId = projectIdea.getStudent().getId();
+
         if (!(userDetails.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                | (userDetails.getId().equals(studentId)))
-        )
+                | (userDetails.getId().equals(studentId))))
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 
-        projectIdeaRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Not found project idea with id = " + id));
+        Set<Student> students = projectIdea.getLikes();
+        for (Student student : students) {
+            student.getLikedProjectIdeas().remove(projectIdea);
+            studentRepository.save(student);
+        }
+
+        Set<Student> students2 = projectIdea.getBookMarkedBy();
+        for (Student student : students2) {
+            student.getBookmarkedProjectIdeas().remove(projectIdea);
+            studentRepository.save(student);
+        }
 
         projectIdeaRepository.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

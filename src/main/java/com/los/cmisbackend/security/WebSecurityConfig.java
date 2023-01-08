@@ -93,6 +93,9 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/cmis/posts").permitAll()
                 .antMatchers("/api/cmis/posts/{id}").permitAll()
                 .antMatchers("/api/cmis/posts/global").permitAll()
+                .antMatchers("/api/cmis/students/withProjectIdea").permitAll()
+                .antMatchers(("/api/cmis/projectidea")).permitAll()
+                .antMatchers(("/api/cmis/projectidea/{id}")).permitAll()
                 .antMatchers("/api/cmis/**")
                 .access("hasRole('ROLE_ADMIN') or hasRole('ROLE_COMMUNITY') or hasRole('ROLE_STUDENT')")
                 .anyRequest().permitAll();

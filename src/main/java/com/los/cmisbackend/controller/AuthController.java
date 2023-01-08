@@ -12,7 +12,7 @@ import com.los.cmisbackend.entity.*;
 import com.los.cmisbackend.payload.request.LoginRequest;
 import com.los.cmisbackend.payload.request.SignupRequest;
 import com.los.cmisbackend.payload.response.MessageResponse;
-import com.los.cmisbackend.payload.response.UserInfoResponse;
+import com.los.cmisbackend.payload.response.JwtResponse;
 import com.los.cmisbackend.security.jwt.JwtUtils;
 import com.los.cmisbackend.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,17 +65,17 @@ public class AuthController {
                 .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
-
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new UserInfoResponse(userDetails.getId(),
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(new JwtResponse(jwt,
+                        userDetails.getId(),
                         userDetails.getFirstName(),
                         userDetails.getLastName(),
                         userDetails.getEmail(),
