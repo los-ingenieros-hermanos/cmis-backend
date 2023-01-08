@@ -91,7 +91,7 @@ public class Community {
 	private String twitter;
 
 	@Column(name="application_criteria", length = 600)
-	private String applicationCriteria = "No criteria";
+	private String applicationCriteria = "";
 
 	public Community() {
 		this.type = "community";
