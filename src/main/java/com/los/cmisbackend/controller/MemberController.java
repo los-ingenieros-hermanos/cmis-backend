@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.los.cmisbackend.payload.request.MessageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -305,7 +306,7 @@ public class MemberController {
 	@PostMapping("/communities/{communityId}/apply/{studentId}")
 	public ResponseEntity<MemberApplication> memberApplication(@PathVariable(value = "communityId") Long communityId, 
 											@PathVariable(value = "studentId") Long studentId, 
-											@RequestBody String message)
+											@RequestBody MessageRequest message)
 	{
 		Community community = communityRepository.findById(communityId)
 				.orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
@@ -319,7 +320,7 @@ public class MemberController {
 		}
 
 		// create member application and add to community member applicant list
-		memberApplication = new MemberApplication(memberApplicant, community, message);
+		memberApplication = new MemberApplication(memberApplicant, community, message.getMessage());
 		community.addMemberApplication(memberApplication);
 		communityRepository.save(community);
 		return new ResponseEntity<>(memberApplication, HttpStatus.CREATED);
