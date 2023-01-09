@@ -215,17 +215,22 @@ public class TagController {
     }
 
     @GetMapping("/communities/communitiesWithTags")
-    public ResponseEntity<List<Community>> getAllCommunitiesWithTags() {
+    public ResponseEntity<List<Community>> getAllCommunitiesWithTags(@RequestBody List<Tag> tags) {
 
         List<Community> communities = communityRepository.findAll();
 
         List<Community> _communities = new ArrayList<>();
 
         for (Community community: communities) {
-            if(!community.getTags().isEmpty())
-                _communities.add(community);
+            if (!community.getTags().isEmpty()) {
+                for(Tag tag: tags) {
+                    if(community.getTags().contains(tag)){
+                        _communities.add(community);
+                        break;
+                    }
+                }
+            }
         }
-
         return new ResponseEntity<>(_communities, HttpStatus.OK);
     }
 
