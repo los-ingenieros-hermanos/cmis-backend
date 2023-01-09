@@ -226,6 +226,23 @@ public class TagController {
                 _communities.add(community);
         }
 
+        return new ResponseEntity<>(_communities, HttpStatus.OK);
+    }
+
+    @GetMapping("/communities/tags/{tagId}")
+    public ResponseEntity<List<Community>> getAllCommunitiesWithTag(@PathVariable(value = "tagId") Long tagId) {
+
+        List<Community> communities = communityRepository.findAll();
+
+        Tag tag = tagRepository.findById(tagId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Tag with id = " + tagId));
+
+        List<Community> _communities = new ArrayList<>();
+
+        for(Community community: communities) {
+            if(community.getTags().contains(tag))
+                _communities.add(community);
+        }
 
         return new ResponseEntity<>(_communities, HttpStatus.OK);
     }
