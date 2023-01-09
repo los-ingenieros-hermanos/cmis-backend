@@ -22,9 +22,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @CrossOrigin(origins = "${cmis.app.baseUrl}", maxAge = 3600, allowCredentials = "true")
 @RestController
@@ -214,5 +212,21 @@ public class TagController {
         communityRepository.save(community);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/communities/communitiesWithTags")
+    public ResponseEntity<List<Community>> getAllCommunitiesWithTags() {
+
+        List<Community> communities = communityRepository.findAll();
+
+        List<Community> _communities = new ArrayList<>();
+
+        for (Community community: communities) {
+            if(!community.getTags().isEmpty())
+                _communities.add(community);
+        }
+
+
+        return new ResponseEntity<>(_communities, HttpStatus.OK);
     }
 }

@@ -130,6 +130,9 @@ public class CommunityController {
             userRepository.save(user);
         }
 
+        if(communitiesRequest.getTags() != null)
+            community.setTags(communitiesRequest.getTags());
+
         if(communitiesRequest.getBanner() != null)
             community.setBanner(communitiesRequest.getBanner());
 

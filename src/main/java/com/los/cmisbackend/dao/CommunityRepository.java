@@ -1,6 +1,7 @@
 package com.los.cmisbackend.dao;
 
 import com.los.cmisbackend.entity.Role;
+import com.los.cmisbackend.entity.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,4 +29,5 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
 
     Page<Community> findAllByOrderByNameAsc(Pageable pageable);
     Page<Community> findAllByOrderByNameDesc(Pageable pageable);
+
 }

@@ -20,7 +20,7 @@ public class ProjectIdea {
     @Column(name="title")
     private String title;
 
-    @Column(name="text")
+    @Column(name="text", length = 5000)
     private String text;
 
     @Lob
