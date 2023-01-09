@@ -535,6 +535,25 @@ public class PostController {
         return new ResponseEntity<>(_posts, HttpStatus.OK);
     }
 
+    // get all private posts of a community
+    @GetMapping("/posts/communities/{communityId}/global")
+    public ResponseEntity<List<Post>> getAllGlobalPostsOfCommunity(
+            @PathVariable(value = "communityId") Long communityId,
+            @RequestParam(value = "page", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_NUMBER) Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = CmisConstants.DEFAULT_PAGE_SIZE) Integer size)
+    {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Community community = communityRepository.findById(communityId)
+                .orElseThrow(() -> new ResourceNotFoundException("Not found Community with id = " + communityId));
+
+        Page<Post> posts = postRepository.findAllByVisibilityAndCommunity("global", community, pageable);
+
+        List<Post> _posts = posts.getNumberOfElements() == 0 ? Collections.emptyList() : posts.getContent();
+
+        return new ResponseEntity<>(_posts, HttpStatus.OK);
+    }
+
     // get all private posts of a communities which a student is member of
     @GetMapping("/posts/{studentId}/private")
     public ResponseEntity<List<Post>> getAllPrivatePostsOfCommunitiesStudentIsMemberOf(
