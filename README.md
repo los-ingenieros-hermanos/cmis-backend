@@ -29,13 +29,10 @@ CMIS backend implementation using Spring Boot.
   
 # Test Cases and Results
 ![](images/t1.png)
-![](images/t1_r.png)
 ![](images/t2.png)
-![](images/t2_r.png)
 ![](images/t3.png)
 ![](images/t4.png)
 ![](images/t5.png)
-![](images/t5_r.png)
 ![](images/t6.png)
 ![](images/t7.png)
 ![](images/t8.png)
@@ -74,6 +71,7 @@ CMIS backend implementation using Spring Boot.
 ![](images/t41.png)
 ![](images/t42.png)
 ![](images/t43.png)
+![](images/t44.png)
   
 
 # Detailed Explanations Of Requests and Responses(not up to date)
