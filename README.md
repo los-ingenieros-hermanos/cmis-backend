@@ -1,12 +1,84 @@
 # cmis-backend
 CMIS backend implementation using Spring Boot.
 
-# Important Notes
-- All actions of community, post, student requires login.
-- User id, community id, student id are shared.
+# RUN
+``` mvn spring-boot:run ```  
+
+# CMIS Project Documentation
+![DOC](https://github.com/los-ingenieros-hermanos/gtu-community-management-and-interaction-system)  
+
+# Database Relation Diagram
+![](images/relation-diagram.jpg)  
+  
+# Requests
+![](images/r1.jpg)
+![](images/r2.jpg)
+![](images/r3.jpg)
+![](images/r4.jpg)
+![](images/r5.jpg)
+![](images/r6.jpg)
+![](images/r7.jpg)
+![](images/r8.jpg)
+![](images/r9.jpg)
+![](images/r10.jpg)
+![](images/r11.jpg)
+![](images/r12.jpg)
+![](images/r13.jpg)
+![](images/r14.jpg)
+![](images/r15.jpg)  
+  
+# Test Cases and Results
+![](images/t1.jpg)
+![](images/t1_r.jpg)
+![](images/t2.jpg)
+![](images/t2_r.jpg)
+![](images/t3.jpg)
+![](images/t4.jpg)
+![](images/t5.jpg)
+![](images/t5_r.jpg)
+![](images/t6.jpg)
+![](images/t7.jpg)
+![](images/t8.jpg)
+![](images/t9.jpg)
+![](images/t10.jpg)
+![](images/t11.jpg)
+![](images/t12.jpg)
+![](images/t13.jpg)
+![](images/t14.jpg)
+![](images/t15.jpg)
+![](images/t16.jpg)
+![](images/t17.jpg)
+![](images/t18.jpg)
+![](images/t19.jpg)
+![](images/t20.jpg)
+![](images/t21.jpg)
+![](images/t22.jpg)
+![](images/t23.jpg)
+![](images/t24.jpg)
+![](images/t25.jpg)
+![](images/t26.jpg)
+![](images/t27.jpg)
+![](images/t28.jpg)
+![](images/t29.jpg)
+![](images/t30.jpg)
+![](images/t31.jpg)
+![](images/t32.jpg)
+![](images/t33.jpg)
+![](images/t34.jpg)
+![](images/t35.jpg)
+![](images/t36.jpg)
+![](images/t37.jpg)
+![](images/t38.jpg)
+![](images/t39.jpg)
+![](images/t40.jpg)
+![](images/t41.jpg)
+![](images/t42.jpg)
+![](images/t43.jpg)
+  
+
+# Detailed Explanations Of Requests and Responses(not up to date)
 
 # authentication
-
 | Method | URL | ACTION |
 | ------ | --- | ------ |
 | POST   | /api/auth/signin | login an account |
