@@ -8,7 +8,7 @@ CMIS backend implementation using Spring Boot.
 [DOC](https://github.com/los-ingenieros-hermanos/gtu-community-management-and-interaction-system)  
 
 # Database Relation Diagram
-![](images/relation.png)  
+![](images/relation-diagram.png)  
   
 # Requests
 ![](images/r1.jpg)
